@@ -1,0 +1,2 @@
+[flake8]
+ignore = ANN101, ANN201, ANN204
