@@ -135,30 +135,30 @@ def t_error(t):
 	t.lexer.skip(1)
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 	# Build the lexer
-from .ply import lex as lex
-import sys
+	from .ply import lex as lex
+	import sys
 
-lexer = lex.lex()
+	lexer = lex.lex()
 
-if len(sys.argv) > 1:
-	f = open(sys.argv[1],"r")
-	data = f.read()
-	f.close()
-else:
-	data = ""
+	if len(sys.argv) > 1:
+		f = open(sys.argv[1],"r")
+		data = f.read()
+		f.close()
+	else:
+		data = ""
+		while True:
+			try:
+				data += raw_input() + "\n"
+			except:
+				break
+
+	lex.input(data)
+
+	# Tokenize
 	while True:
-		try:
-			data += raw_input() + "\n"
-		except:
-			break
-
-lex.input(data)
-
-# Tokenize
-while True:
-	tok = lex.token()
-	if not tok:
-		break      # No more input
-	print(tok)
+		tok = lex.token()
+		if not tok:
+			break      # No more input
+		print(tok)
