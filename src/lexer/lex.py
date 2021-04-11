@@ -128,7 +128,10 @@ def t_newline(t):
 # A string containing ignored characters (spaces and tabs)
 t_ignore = ' \t'
 
-# Ignores comments (problemas para anidar. Solucion es pasar a otro estado?)
+# Ignores comments
+#TODOINTHEFUTURE: averiguar como anidar comentarios. Una forma sería pasar a usar
+#secciones como marca el tutorial, pero hay un problema con como leer el texto
+# dentro de /* */ sin considerar dichas secuencias
 t_ignore_COMMENT = r'/\*(.|\n)*?\*/'
 
 # Error handling rule
