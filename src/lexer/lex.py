@@ -85,7 +85,9 @@ def t_INT(t):
 	return t
 
 # reads
-t_STRING = r'\"([^\\\"]|(\\n)|(\\t)|(\\\^c)|(\\[0-9][0-9][0-9])|(\\\")|(\\\\)|(\\[\s\t\n\f]+\\))*\"'
+def t_STRING(t):
+	r'\"([^\\\"]|(\\n)|(\\t)|(\\\^c)|(\\[0-9][0-9][0-9])|(\\\")|(\\\\)|(\\[\s\t\n\f]+\\))*\"'
+	return t
 
 def t_ID(t):
 	r'[a-zA-Z][a-zA-Z_0-9]*'
@@ -97,7 +99,7 @@ def t_ID(t):
 t_COMMA = r','
 t_COLON = r':'
 t_SEMICOLON = r';'
-t_LPARE = r'\('
+t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_LBRACK = r'\['
 t_RBRACK = r'\]'
@@ -119,15 +121,15 @@ t_OR = r'\|'
 t_ASSIGN = r'\:\='
 
 # Define a rule so we can track line numbers
-def T_newline(t):
+def t_newline(t):
 	r'\n+'
 	t.lexer.lineno += len(t.value)
 
 # A string containing ignored characters (spaces and tabs)
 t_ignore = ' \t'
 
-# Esto funciona correctamente?
-t_ignore_COMMENT = r'\/\*.*\*\/'
+# Ignores comments (problemas para anidar. Solucion es pasar a otro estado?)
+t_ignore_COMMENT = r'/\*(.|\n)*?\*/'
 
 # Error handling rule
 def t_error(t):
@@ -137,7 +139,7 @@ def t_error(t):
 
 if __name__ == '__main__':
 	# Build the lexer
-	from .ply import lex as lex
+	from ply import lex as lex
 	import sys
 
 	lexer = lex.lex()

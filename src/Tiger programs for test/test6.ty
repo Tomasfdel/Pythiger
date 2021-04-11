@@ -1,0 +1,24 @@
+"String de prueba genérico."
+
+/*comentario que no se va a mostrar*/
+
+"Otro
+string
+de	prueba
+con enters y tabs"
+
+"Probando \n caracteres \t de \^c escape \420 como \" este \\"
+"Este es el string \\ de prueba especial."
+"|1234567890   °!\"#$%&/()=?¡   ¬\\"
+"´+{}-.,<>  ;:_[]¨*    ^`~"
+""
+
+/* comentario
+en varias
+lineas */
+
+
+/* /*comentario anidado*/ */
+
+/* */
+"string final"
