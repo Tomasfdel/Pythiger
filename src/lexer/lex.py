@@ -10,7 +10,8 @@ tokens = (
 	#'NEW_LINE',
 	#'TAB',
 	#'SPACE',
-	'COMMENT',
+	#'COMMENT',
+
 
 	#punctuation symbols
 	'COMMA',
@@ -77,6 +78,10 @@ reservedKeywords = (
 	'type',
 )
 
+states = (('comment', 'exclusive'),
+          ('string', 'exclusive'),
+		  ('escapeString', 'exclusive'),)
+
 # Regular expression rules with some actions required
 # Reads an integer value
 def t_INT(t):
@@ -84,9 +89,33 @@ def t_INT(t):
 	t.value = int(t.value)
 	return t
 
-# reads
-def t_STRING(t):
-	r'\"([^\\\"]|(\\n)|(\\t)|(\\\^c)|(\\[0-9][0-9][0-9])|(\\\")|(\\\\)|(\\[\s\t\n\f]+\\))*\"'
+# Reads a string
+def t_string(t):
+	#Reads the first character " and jumps to the string state
+	r'\"'
+	t.lexer.string_start = t.lexer.lexpos
+	t.lexer.begin('string')
+
+def t_string_word(t):
+	r'([^\\\"\n]|(\\n)|(\\t)|(\\\^c)|(\\[0-9][0-9][0-9])|(\\\")|(\\\\))+'
+
+def t_string_specialCase(t):
+	r'\\'
+	t.lexer.special_start = t.lexer.lexpos
+	t.lexer.begin('escapeString')
+
+def t_escapeString_finish(t):
+	r'\\'
+	t.lexer.begin('string')
+
+#Hay un asunto acá, porque string apunta al final en vez de al principio del
+#token. Esto nos jode en algo?
+def t_string_STRING(t):
+	#Reads the second character " and returns the STRING token
+	r'\"'
+	t.value = t.lexer.lexdata[t.lexer.string_start-1:t.lexer.lexpos]
+	t.type = "STRING"
+	t.lexer.begin('INITIAL')
 	return t
 
 def t_ID(t):
@@ -94,6 +123,31 @@ def t_ID(t):
 	if t.value in reservedKeywords:
 		t.type = t.value.upper()
 	return t
+
+# Ignores comments
+#Note: it only recognize comments if there is a whitespace at the end of the comment
+#i.e: /*any_text */
+def t_comment(t):
+	r'\/\*'
+	t.lexer.code_start = t.lexer.lexpos
+	t.lexer.level = 1
+	t.lexer.begin('comment')
+
+def t_comment_begin(t):
+	r'\/\*'
+	t.lexer.level += 1
+	pass
+
+def t_comment_COMMENT(t):
+	r'(?!\/\*|\*\/)\S+'
+	pass
+
+def t_comment_end(t):
+	r'\*\/'
+	t.lexer.level -= 1
+
+	if t.lexer.level == 0:
+		t.lexer.begin('INITIAL')
 
 # Regular expression rules for simple tokens
 t_COMMA = r','
@@ -121,24 +175,18 @@ t_OR = r'\|'
 t_ASSIGN = r'\:\='
 
 # Define a rule so we can track line numbers
-def t_newline(t):
+def t_ANY_newline(t):
 	r'\n+'
 	t.lexer.lineno += len(t.value)
 
 # A string containing ignored characters (spaces and tabs)
-t_ignore = ' \t'
-
-# Ignores comments
-#TODOINTHEFUTURE: averiguar como anidar comentarios. Una forma sería pasar a usar
-#secciones como marca el tutorial, pero hay un problema con como leer el texto
-# dentro de /* */ sin considerar dichas secuencias
-t_ignore_COMMENT = r'/\*(.|\n)*?\*/'
+t_ANY_ignore = ' \t'
 
 # Error handling rule
-def t_error(t):
-	print("Illegal character '%s' " %t.value[0])
+#To Do: Ver un manejo correcto de errores y como debería responder en cada caso
+def t_ANY_error(t):
+	print("Illegal character '%s' in line '%s'" %(t.value[0],t.lineno))
 	t.lexer.skip(1)
-
 
 if __name__ == '__main__':
 	# Build the lexer
