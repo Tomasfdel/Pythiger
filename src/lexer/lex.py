@@ -97,8 +97,12 @@ def t_string(t):
 	t.lexer.begin('string')
 
 def t_string_word(t):
-	r'([^\\\"\n]|(\\n)|(\\t)|(\\\^c)|(\\[0-9][0-9][0-9])|(\\\")|(\\\\))+'
+	r'[^\\\"\n]+'
 
+def t_string_notWord(t):
+	r'((\\n)|(\\t)|(\\\^c)|(\\[0-9][0-9][0-9])|(\\\")|(\\\\))+'
+
+#If the lexer reads the beginning of a multiline string, enter special state
 def t_string_specialCase(t):
 	r'\\'
 	t.lexer.special_start = t.lexer.lexpos
@@ -175,7 +179,7 @@ t_OR = r'\|'
 t_ASSIGN = r'\:\='
 
 # Define a rule so we can track line numbers
-def t_ANY_newline(t):
+def t_INITIAL_comment_escapeString_newline(t):
 	r'\n+'
 	t.lexer.lineno += len(t.value)
 
@@ -186,7 +190,7 @@ t_ANY_ignore = ' \t'
 #To Do: Ver un manejo correcto de errores y como debería responder en cada caso
 def t_ANY_error(t):
 	print("Illegal character '%s' in line '%s'" %(t.value[0],t.lineno))
-	t.lexer.skip(1)
+	#t.lexer.skip(1)
 
 if __name__ == '__main__':
 	# Build the lexer
