@@ -13,20 +13,20 @@ class Variable(ASTNode):
 
 
 class SimpleVar(Variable):
-    def __init__(self, position, symbol):
+    def __init__(self, position=-1, symbol):
         self.position = position
         self.symbol = symbol
 
 
 class FieldVar(Variable):
-    def __init__(self, position, variable, symbol):
+    def __init__(self, position=-1, variable, symbol):
         self.position = position
         self.variable = variable
         self.symbol = symbol
 
 
 class SubscriptVar(Variable):
-    def __init__(self, position, variable, expression):
+    def __init__(self, position=-1, variable, expression):
         self.position = position
         self.variable = variable
         self.expression = expression
@@ -37,7 +37,7 @@ class Expression(ASTNode):
 
 
 class VarExp(Expression):
-    def __init__(self, position, variable):
+    def __init__(self, position=-1, variable):
         self.position = position
         self.variable = variable
 
@@ -48,26 +48,26 @@ class NilExp(Expression):
 
 
 class IntExp(Expression):
-    def __init__(self, position, integer):
+    def __init__(self, position=-1, integer):
         self.position = position
         self.integer = integer
 
 
 class StringExp(Expression):
-    def __init__(self, position, string):
+    def __init__(self, position=-1, string):
         self.position = position
         self.string = string
 
 
 class CallExp(Expression):
-    def __init__(self, position, function, arguments):
+    def __init__(self, position=-1, function, arguments):
         self.position = position
         self.function = function
         self.arguments = arguments
 
 
 class OpExp(Expression):
-    def __init__(self, position, operator, left, right):
+    def __init__(self, position=-1, operator, left, right):
         self.position = position
         self.operator = operator
         self.left = left
@@ -75,26 +75,26 @@ class OpExp(Expression):
 
 
 class RecordExp(Expression):
-    def __init__(self, position, _type, fields):
+    def __init__(self, position=-1, _type, fields):
         self.position = position
         self.type = _type
         self.fields = fields
 
 
 class SeqExp(Expression):
-    def __init__(self, position, sequence):
+    def __init__(self, position=-1, sequence):
         self.position = position
 
 
 class AssignExp(Expression):
-    def __init__(self, position, variable, expression):
+    def __init__(self, position=-1, variable, expression):
         self.position = position
         self.variable = variable
         self.expression = expression
 
 
 class IfExp(Expression):
-    def __init__(self, position, test, then, elsee):
+    def __init__(self, position=-1, test, then, elsee):
         self.position = position
         self.test = test
         self.then = then
@@ -102,7 +102,7 @@ class IfExp(Expression):
 
 
 class WhileExp(Expression):
-    def __init__(self, position, test, body):
+    def __init__(self, position=-1, test, body):
         self.position = position
         self.test = test
         self.body = body
@@ -114,7 +114,7 @@ class BreakExp(Expression):
 
 
 class ForExp(Expression):
-    def __init__(self, position, variable, low, high, body):
+    def __init__(self, position=-1, variable, low, high, body):
         self.position = position
         self.variable = variable
         self.low = low
@@ -123,14 +123,14 @@ class ForExp(Expression):
 
 
 class LetExp(Expression):
-    def __init__(self, position, declarations, body):
+    def __init__(self, position=-1, declarations, body):
         self.position = position
         self.declarations = declarations
         self.body = body
 
 
 class ArrayExp(Expression):
-    def __init__(self, position, _type, size, init):
+    def __init__(self, position=-1, _type, size, init):
         self.position = position
         self.type = _type
         self.size = size
@@ -142,13 +142,13 @@ class Declaration(ASTNode):
 
 
 class FunctionDec(Declaration):
-    def __init__(self, position, function):
+    def __init__(self, position=-1, function):
         self.position = position
         self.function = function
 
 
 class VarDec(Declaration):
-    def __init__(self, position, symbol, _type, init):
+    def __init__(self, position=-1, symbol, _type, init):
         self.position = position
         self.symbol = symbol
         self.type = _type
@@ -156,7 +156,7 @@ class VarDec(Declaration):
 
 
 class TypeDec(Declaration):
-    def __init__(self, position, _type):
+    def __init__(self, position=-1, _type):
         self.position = position
         self.type = _type
 
@@ -166,13 +166,13 @@ class Type(ASTNode):
 
 
 class NameTy(Type):
-    def __init__(self, position, name):
+    def __init__(self, position=-1, name):
         self.position = position
         self.name = name
 
 
 class RecordTy(Type):
-    def __init__(self, position, variable, _type, init):
+    def __init__(self, position=-1, variable, _type, init):
         self.position = position
         self.variable = variable
         self.type = _type
@@ -180,14 +180,14 @@ class RecordTy(Type):
 
 
 class ArrayTy(Type):
-    def __init__(self, position, array):
+    def __init__(self, position=-1, array):
         self.position = position
         self.array = array
 
 
 # Que garlopa son estas clases???
 class Field(ASTNode):
-    def __init__(self, position, name, _type):
+    def __init__(self, position=-1, name, _type):
         self.position = position
         self.name = name
         self.type = _type
@@ -208,7 +208,7 @@ class ExpList(ASTNode):
 
 
 class Fundec(ASTNode):
-    def __init__(self, position, name, parameters, result, body):
+    def __init__(self, position=-1, name, parameters, result, body):
         self.position = position
         self.name = name
         self.parameters = parameters
@@ -229,7 +229,7 @@ class DecList(ASTNode):
 
 
 class Namety(ASTNode):
-    def __init__(self, position, type):
+    def __init__(self, position=-1, type):
         self.position = position
         self.type = type
 
@@ -241,7 +241,7 @@ class NametyList(ASTNode):
 
 
 class Efield(ASTNode):
-    def __init__(self, position, expression):
+    def __init__(self, position=-1, expression):
         self.position = position
         self.expression = expression
 
