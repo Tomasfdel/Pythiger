@@ -1,3 +1,5 @@
+# coding=utf-8
+
 # List of token names
 tokens = (
     # symbols
