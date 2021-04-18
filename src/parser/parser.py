@@ -1,5 +1,4 @@
 import parser.ast_nodes as Node
-from lex import tokens
 import ply.yacc as yacc
 
 """
@@ -86,6 +85,8 @@ import ply.yacc as yacc
         | LET decs IN exp_seq END
 """
 
+# flake8: noqa ANN001
+
 
 def p_empty(p):
     "empty :"
@@ -148,7 +149,7 @@ def p_record_ty(p):
     record_ty : empty_list
               | field_list
     """
-    p[0] = RecordTy(fieldList=p[1])
+    p[0] = Node.RecordTy(fieldList=p[1])
 
 
 def p_array_ty(p):

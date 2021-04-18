@@ -1,29 +1,30 @@
-def main ():
+def main():
 
     # Import the lexer and parser
-    from lexer import lex as l
+    from lexer import lex as le
     from parser import parser as p
     import sys
-    from ply import lex, yacc
+    from ply import lex
 
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 1:
+        print("Fatal error. No input file detected.")
+    else:
         f = open(sys.argv[1], "r")
         data = f.read()
         f.close()
-    
 
-    lex.input(data)
+        lex.input(data)
 
-    # Tokenize
-    while True:
-        tok = lex.token()
-        if not tok:
-            break  # No more input
-        print(tok)
+        # Tokenize
+        while True:
+            tok = lex.token()
+            if not tok:
+                break  # No more input
+            print(tok)
 
-    result = p.parser.parse(data, l.lexer)
-    print(result)
-    
-    
-if __name__ == '__main__':
+        result = p.parser.parse(data, le.lexer)
+        print(result)
+
+
+if __name__ == "__main__":
     main()
