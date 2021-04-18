@@ -1,4 +1,4 @@
-import ast_nodes as Node
+import parser.ast_nodes as Node
 from lex import tokens
 import ply.yacc as yacc
 
