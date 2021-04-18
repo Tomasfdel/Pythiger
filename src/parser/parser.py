@@ -1,4 +1,8 @@
-'''
+import ast_nodes as Node
+from lex import tokens
+import ply.yacc as yacc
+
+"""
     decs : decs dec | dec
 
     dec : tdec | fdec | vdec
@@ -80,4 +84,106 @@
 
     let : LET decs IN END
         | LET decs IN exp_seq END
-'''
+"""
+
+
+def p_empty(p):
+    "empty :"
+    pass
+
+
+def p_empty_list(p):
+    "empty_list : empty"
+    p[0] = []
+
+
+def p_type_dec_block(p):
+    """
+    type_dec_block : empty_list
+                   | type_dec_list
+    """
+    p[0] = Node.TypeDecBlock(type=p[1])
+
+
+def p_type_dec(p):
+    "type_dec : TYPE ID EQ type"
+    p[0] = Node.TypeDec(name=p[2], type=p[4])
+
+
+# Non-empty type declaration list.
+def p_type_dec_list(p):
+    """
+    type_dec_list : type_dec_list_iter
+                  | type_dec_list_end
+    """
+    p[0] = p[1]
+
+
+def p_type_dec_list_iter(p):
+    "type_dec_list_iter : type_dec_list type_dec"
+    p[0] = p[1].append(p[2])
+
+
+def p_type_dec_list_end(p):
+    "type_dec_list_end : type_dec"
+    p[0] = [p[1]]
+
+
+def p_type(p):
+    """
+    type : name_ty
+         | record_ty
+         | array_ty
+    """
+    p[0] = p[1]
+
+
+def p_name_ty(p):
+    "name_ty : ID"
+    p[0] = Node.NameTy(p[1])
+
+
+def p_record_ty(p):
+    """
+    record_ty : empty_list
+              | field_list
+    """
+    p[0] = RecordTy(fieldList=p[1])
+
+
+def p_array_ty(p):
+    "array_ty : ARRAY OF ID"
+    p[0] = Node.ArrayTy(array=p[3])
+
+
+def p_field(p):
+    "field : ID COLON ID"
+    p[0] = Node.Field(name=p[1], type=p[3])
+
+
+# Non-empty record field list.
+def p_field_list(p):
+    """
+    field_list : field_list_end
+               | field_list_iter
+    """
+    p[0] = p[1]
+
+
+def p_field_list_iter(p):
+    "field_list_iter : field_list field"
+    p[0] = p[1].append(p[2])
+
+
+def p_field_list_end(p):
+    "field_list_end : field"
+    p[0] = [p[1]]
+
+
+# Error rule for syntax errors
+def p_error(p):
+    print("Syntax error in input!")
+
+
+# Build the parser
+parser = yacc.yacc()
