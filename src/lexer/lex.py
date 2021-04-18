@@ -200,7 +200,6 @@ t_ANY_ignore = " \t"
 # To Do: Ver un manejo correcto de errores y como debería responder en cada caso
 def t_ANY_error(t):
     print("Illegal character '%s' in line '%s'" % (t.value[0], t.lineno))
-    # t.lexer.skip(1)
 
 
 # Build the lexer
