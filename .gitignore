@@ -3,3 +3,6 @@
 .vscode/*
 env
 .DS_Store
+
+# Dejo esto visible?
+src/install_ply.py
