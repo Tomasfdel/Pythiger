@@ -192,12 +192,14 @@ def t_ANY_error(t):
 	print("Illegal character '%s' in line '%s'" %(t.value[0],t.lineno))
 	#t.lexer.skip(1)
 
-if __name__ == '__main__':
-	# Build the lexer
-	from ply import lex as lex
-	import sys
+# Build the lexer
+from ply import lex as lex
+import sys
 
-	lexer = lex.lex()
+lexer = lex.lex()
+
+if __name__ == '__main__':
+
 
 	if len(sys.argv) > 1:
 		f = open(sys.argv[1],"r")
