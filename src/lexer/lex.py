@@ -92,7 +92,7 @@ def t_INT(t):
 # Reads a string
 def t_string(t):
     # Reads the first character " and jumps to the string state
-    r"\" "
+    r"\""
     t.lexer.string_start = t.lexer.lexpos
     t.lexer.begin("string")
 
@@ -121,7 +121,7 @@ def t_escapeString_finish(t):
 # token. Esto nos jode en algo?
 def t_string_STRING(t):
     # Reads the second character " and returns the STRING token
-    r"\" "
+    r"\""
     t.value = t.lexer.lexdata[t.lexer.string_start - 1 : t.lexer.lexpos]
     t.type = "STRING"
     t.lexer.begin("INITIAL")
