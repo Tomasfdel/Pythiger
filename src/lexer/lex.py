@@ -203,7 +203,6 @@ t_ANY_ignore = " \t"
 def t_ANY_error(t):
     print("Illegal character '%s' in line '%s'" % (t.value[0], t.lineno))
 
-
 # Build the lexer
 from ply import lex as lex
 import sys
