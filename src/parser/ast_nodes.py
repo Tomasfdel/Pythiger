@@ -6,6 +6,9 @@ from dataclasses import dataclass
 class Position:
     lineNumber: int
 
+
+# TODO: Run black and flake.
+
 # TODO: Replace dummy ASTNode definiton.
 # class ASTNode(ABC):
 # @abstractmethod
