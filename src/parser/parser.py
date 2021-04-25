@@ -1,5 +1,9 @@
 import parser.ast_nodes as Node
 import ply.yacc as yacc
+from lexer.lex import tokens
+
+# TODO: Remove this line after finishing.
+import code
 
 """
     decs : decs dec | dec
@@ -87,6 +91,8 @@ import ply.yacc as yacc
 
 # flake8: noqa ANN001
 
+start = "type_dec_block"
+
 
 def p_empty(p):
     "empty :"
@@ -122,7 +128,8 @@ def p_type_dec_list(p):
 
 def p_type_dec_list_iter(p):
     "type_dec_list_iter : type_dec_list type_dec"
-    p[0] = p[1].append(p[2])
+    p[0] = p[1]
+    p[0].append(p[2])
 
 
 def p_type_dec_list_end(p):
@@ -146,10 +153,10 @@ def p_name_ty(p):
 
 def p_record_ty(p):
     """
-    record_ty : empty_list
-              | field_list
+    record_ty : LBRACE empty_list RBRACE
+              | LBRACE field_list RBRACE
     """
-    p[0] = Node.RecordTy(fieldList=p[1])
+    p[0] = Node.RecordTy(fieldList=p[2])
 
 
 def p_array_ty(p):
@@ -172,8 +179,9 @@ def p_field_list(p):
 
 
 def p_field_list_iter(p):
-    "field_list_iter : field_list field"
-    p[0] = p[1].append(p[2])
+    "field_list_iter : field_list COMMA field"
+    p[0] = p[1]
+    p[0].append(p[3])
 
 
 def p_field_list_end(p):
