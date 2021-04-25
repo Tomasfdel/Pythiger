@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from dataclasses import dataclass
 
+
+#TODO: Write this class.
 @dataclass
 class Position:
     lineNumber: int
@@ -15,8 +17,9 @@ class Position:
 # def pretty_print(self):
 #     pass
 
+@dataclass
 class ASTNode:
-    pass
+    position: Position
 
 class Declaration(ASTNode):
     pass
@@ -105,7 +108,7 @@ class VarExp(Expression):
 
 @dataclass
 class NilExp(Expression):
-    position: Position
+    pass
 
 @dataclass
 class IntExp(Expression):
@@ -163,7 +166,7 @@ class WhileExp(Expression):
 
 @dataclass
 class BreakExp(Expression):
-    position: Position
+    pass
 
 
 
