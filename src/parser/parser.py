@@ -370,7 +370,7 @@ def p_ne_exp_field_list(p):
 def p_ne_exp_field_list_iter(p):
     "ne_exp_field_list_iter : ne_exp_field_list COMMA exp_field"
     p[0] = p[1]
-    p[0].append(p[2])
+    p[0].append(p[3])
 
 
 def p_ne_exp_field_list_end(p):
@@ -394,7 +394,7 @@ def p_ne_exp_seq(p):
 def p_ne_exp_seq_iter(p):
     "ne_exp_seq_iter : ne_exp_seq SEMICOLON expression"
     p[0] = p[1]
-    p[0].append(p[2])
+    p[0].append(p[3])
 
 
 def p_ne_exp_seq_end(p):
@@ -404,7 +404,7 @@ def p_ne_exp_seq_end(p):
 
 def p_assign_exp(p):
     "assign_exp : variable ASSIGN expression"
-    p[0] = Node.VarExp(var=p[1], exp=p[3])
+    p[0] = Node.AssignExp(var=p[1], exp=p[3])
 
 def p_if_exp(p):
     "if_exp : IF expression THEN expression ELSE expression"
@@ -420,11 +420,11 @@ def p_break_exp(p):
 
 def p_for_exp(p):
     "for_exp : FOR variable ASSIGN expression TO expression DO expression"
-    p[0] = Node.VarExp(var=p[2], lo=p[4], hi=p[6], body=p[8])
+    p[0] = Node.ForExp(var=p[2], lo=p[4], hi=p[6], body=p[8])
 
 def p_let_exp(p):
     "let_exp : LET declaration_block IN exp_seq END"
-    p[0] = Node.VarExp(decs=p[2], body=p[4])
+    p[0] = Node.LetExp(decs=p[2], body=p[4])
 
 def p_exp_seq(p):
     """
