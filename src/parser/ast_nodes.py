@@ -100,7 +100,7 @@ class FunctionDec(ASTNode):
 
 @dataclass
 class FunctionDecBlock(Declaration):
-    fuctionDecList: [FunctionDec]
+    functionDecList: [FunctionDec]
 
 # EXPRESSION
 
