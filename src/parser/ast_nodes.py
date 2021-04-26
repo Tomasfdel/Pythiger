@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from dataclasses import dataclass
+from typing import Optional
 
 
 #TODO: Write this class.
@@ -19,7 +20,8 @@ class Position:
 
 @dataclass
 class ASTNode:
-    position: Position
+    # position: Optional[Position]
+    pass
 
 class Declaration(ASTNode):
     pass
@@ -86,14 +88,14 @@ class ArrayTy(Type):
 @dataclass
 class VariableDec(Declaration):
     name: str
-    type: Type # TODO: Make this optional.
+    type: Optional[Type]
     exp: Expression
 
 @dataclass
 class FunctionDec(ASTNode):
     name: str
     params: [Field]
-    returnType: Type # TODO: Make this optional.
+    returnType: Optional[Type]
     body: Expression
 
 @dataclass
