@@ -224,6 +224,7 @@ def p_expression(p):
                | break_exp
                | for_exp
                | let_exp
+               | array_exp
     """
     p[0] = p[1]
 
@@ -233,7 +234,7 @@ def p_var_exp(p):
 
 def p_nil_exp(p):
     "nil_exp : NIL"
-    p[0] = Node.NilExp(position=Position(lineNumber=-1)) #TODO: Change placeholder.
+    p[0] = Node.NilExp()
 
 def p_int_exp(p):
     "int_exp : INT"
@@ -293,47 +294,47 @@ def p_op_exp(p):
 
 def p_unary_minus_exp(p):
     "unary_minus_exp : MINUS expression"
-    p[0] = Node.OpExp(oper=minus, left=0, right=p[2])
+    p[0] = Node.OpExp(oper=Node.Oper.minus, left=0, right=p[2])
 
 def p_binary_plus_exp(p):
     "binary_plus_exp : expression PLUS expression"
-    p[0] = Node.OpExp(oper=plus, left=p[1], right=p[3])
+    p[0] = Node.OpExp(oper=Node.Oper.plus, left=p[1], right=p[3])
 
 def p_binary_minus_exp(p):
     "binary_minus_exp : expression MINUS expression"
-    p[0] = Node.OpExp(oper=minus, left=p[1], right=p[3])
+    p[0] = Node.OpExp(oper=Node.Oper.minus, left=p[1], right=p[3])
 
 def p_binary_times_exp(p):
     "binary_times_exp : expression TIMES expression"
-    p[0] = Node.OpExp(oper=times, left=p[1], right=p[3])
+    p[0] = Node.OpExp(oper=Node.Oper.times, left=p[1], right=p[3])
 
 def p_binary_divide_exp(p):
     "binary_divide_exp : expression DIVIDE expression"
-    p[0] = Node.OpExp(oper=divide, left=p[1], right=p[3])
+    p[0] = Node.OpExp(oper=Node.Oper.divide, left=p[1], right=p[3])
 
 def p_binary_eq_exp(p):
     "binary_eq_exp : expression EQ expression"
-    p[0] = Node.OpExp(oper=eq, left=p[1], right=p[3])
+    p[0] = Node.OpExp(oper=Node.Oper.eq, left=p[1], right=p[3])
 
 def p_binary_neq_exp(p):
     "binary_neq_exp : expression NEQ expression"
-    p[0] = Node.OpExp(oper=neq, left=p[1], right=p[3])
+    p[0] = Node.OpExp(oper=Node.Oper.neq, left=p[1], right=p[3])
 
 def p_binary_lt_exp(p):
     "binary_lt_exp : expression LT expression"
-    p[0] = Node.OpExp(oper=lt, left=p[1], right=p[3])
+    p[0] = Node.OpExp(oper=Node.Oper.lt, left=p[1], right=p[3])
 
 def p_binary_le_exp(p):
     "binary_le_exp : expression LE expression"
-    p[0] = Node.OpExp(oper=le, left=p[1], right=p[3])
+    p[0] = Node.OpExp(oper=Node.Oper.le, left=p[1], right=p[3])
 
 def p_binary_gt_exp(p):
     "binary_gt_exp : expression GT expression"
-    p[0] = Node.OpExp(oper=gt, left=p[1], right=p[3])
+    p[0] = Node.OpExp(oper=Node.Oper.gt, left=p[1], right=p[3])
 
 def p_binary_ge_exp(p):
     "binary_ge_exp : expression GE expression"
-    p[0] = Node.OpExp(oper=ge, left=p[1], right=p[3])
+    p[0] = Node.OpExp(oper=Node.Oper.ge, left=p[1], right=p[3])
 
 def p_binary_and_exp(p):
     "binary_and_exp : expression AND expression"
@@ -433,10 +434,9 @@ def p_exp_seq(p):
     """
     p[0] = p[1]
 
-# TODO: Add to expression rule.
-# def p_array_exp(p):
-#     "array_exp : variable"
-#     p[0] = Node.VarExp(var=p[1])
+def p_array_exp(p):
+    "array_exp : ID LBRACK expression RBRACK OF expression"
+    p[0] = Node.ArrayExp(type=p[1], size=p[3], init=p[6])
 
 # VARIABLE
 
