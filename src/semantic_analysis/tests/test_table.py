@@ -49,3 +49,26 @@ class TestSymbolTable(unittest.TestCase):
         self.table.end_scope()
 
         self.assertIsNone(self.table.find("id"))
+
+    def test_is_closest_scope_a_loop_when_no_scope(self):
+        self.assertFalse(self.table.is_closest_scope_a_loop())
+
+    def test_is_closest_scope_a_loop_when_not_a_loop_scope(self):
+        self.table.begin_scope()
+
+        self.assertFalse(self.table.is_closest_scope_a_loop())
+
+    def test_is_closest_scope_a_loop_when_a_loop_scope(self):
+        self.table.begin_scope(True)
+
+        self.assertTrue(self.table.is_closest_scope_a_loop())
+
+    def test_is_closest_scope_a_loop_when_nesting_scopes(self):
+        self.table.begin_scope()
+        self.table.begin_scope(True)
+
+        self.assertTrue(self.table.is_closest_scope_a_loop())
+
+        self.table.begin_scope()
+
+        self.assertFalse(self.table.is_closest_scope_a_loop())
