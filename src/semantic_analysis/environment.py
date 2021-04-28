@@ -2,8 +2,8 @@ from typing import List
 
 from dataclasses import dataclass
 
-from src.semantic_analysis.table import SymbolTable
-from src.semantic_analysis.types import Type, IntType, StringType, VoidType
+from semantic_analysis.table import SymbolTable
+from semantic_analysis.types import Type, IntType, StringType, VoidType
 
 
 class EnvironmentEntry:
