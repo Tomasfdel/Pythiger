@@ -1,0 +1,58 @@
+from typing import List
+
+from dataclasses import dataclass
+
+
+class Type:
+    pass
+
+
+class NilType(Type):
+    pass
+
+
+class IntType(Type):
+    pass
+
+
+class StringType(Type):
+    pass
+
+
+class VoidType(Type):
+    pass
+
+
+@dataclass
+class Field:
+    name: str
+    type: Type
+
+
+@dataclass
+class RecordType(Type):
+    fields: List[Field]
+
+
+@dataclass
+class ArrayType(Type):
+    type: Type
+
+
+@dataclass
+class NameType(Type):
+    symbol: str
+
+
+def are_types_equal(t1: Type, t2: Type) -> bool:
+    return (
+        isinstance(t1, NilType)
+        and isinstance(t2, NilType)
+        or isinstance(t1, IntType)
+        and isinstance(t2, IntType)
+        or isinstance(t1, StringType)
+        and isinstance(t2, StringType)
+        or isinstance(t1, VoidType)
+        and isinstance(t2, VoidType)
+        or t1 is t2
+    )
