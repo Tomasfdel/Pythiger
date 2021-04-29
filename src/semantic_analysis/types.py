@@ -45,6 +45,8 @@ class NameType(Type):
 
 
 def are_types_equal(t1: Type, t2: Type) -> bool:
+    """Sees if two types are of the same basic type or if they reference the same complex type."""
+
     return (
         isinstance(t1, NilType)
         and isinstance(t2, NilType)
