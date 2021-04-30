@@ -4,12 +4,6 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-#TODO: Write this class.
-@dataclass
-class Position:
-    lineNumber: int
-
-
 # TODO: Run black and flake.
 
 # TODO: Replace dummy ASTNode definiton.
@@ -18,22 +12,28 @@ class Position:
 # def pretty_print(self):
 #     pass
 
+
 @dataclass
 class ASTNode:
-    # position: Optional[Position]
+    position: int
     pass
+
 
 class Declaration(ASTNode):
     pass
 
+
 class Type(ASTNode):
     pass
+
 
 class Expression(ASTNode):
     pass
 
+
 class Variable(ASTNode):
     pass
+
 
 class Oper(Enum):
     plus = 1
@@ -47,14 +47,14 @@ class Oper(Enum):
     gt = 9
     ge = 10
 
-class Empty(ASTNode):
-    pass
 
 # DECLARATION
+
 
 @dataclass
 class DeclarationBlock(ASTNode):
     declarationList: [Declaration]
+
 
 @dataclass
 class TypeDec(ASTNode):
@@ -94,6 +94,7 @@ class VariableDec(Declaration):
     type: Optional[str]
     exp: Expression
 
+
 @dataclass
 class FunctionDec(ASTNode):
     name: str
@@ -101,32 +102,40 @@ class FunctionDec(ASTNode):
     returnType: Optional[str]
     body: Expression
 
+
 @dataclass
 class FunctionDecBlock(Declaration):
     functionDecList: [FunctionDec]
 
+
 # EXPRESSION
+
 
 @dataclass
 class VarExp(Expression):
     var: Variable
 
+
 @dataclass
 class NilExp(Expression):
     pass
+
 
 @dataclass
 class IntExp(Expression):
     int: int
 
+
 @dataclass
 class StringExp(Expression):
     string: str
+
 
 @dataclass
 class CallExp(Expression):
     func: str
     args: [Expression]
+
 
 @dataclass
 class OpExp(Expression):
@@ -134,10 +143,12 @@ class OpExp(Expression):
     left: Expression
     right: Expression
 
+
 @dataclass
 class ExpField(ASTNode):
     name: str
     exp: Expression
+
 
 @dataclass
 class RecordExp(Expression):
@@ -160,7 +171,7 @@ class AssignExp(Expression):
 class IfExp(Expression):
     test: Expression
     then: Expression
-    elsee: Expression #TODO: Por YHVH encontrar un nombre mejor.
+    elsee: Expression  # TODO: Por YHVH encontrar un nombre mejor.
 
 
 @dataclass
@@ -174,7 +185,6 @@ class BreakExp(Expression):
     pass
 
 
-
 @dataclass
 class ForExp(Expression):
     var: str
@@ -183,12 +193,10 @@ class ForExp(Expression):
     body: Expression
 
 
-
 @dataclass
 class LetExp(Expression):
     decs: DeclarationBlock
     body: [Expression]
-
 
 
 @dataclass
@@ -197,7 +205,9 @@ class ArrayExp(Expression):
     size: Expression
     init: Expression
 
+
 # VARIABLE
+
 
 @dataclass
 class SimpleVar(Variable):
@@ -208,6 +218,7 @@ class SimpleVar(Variable):
 class FieldVar(Variable):
     var: Variable
     sym: str
+
 
 @dataclass
 class SubscriptVar(Variable):
