@@ -1,83 +1,556 @@
-'''
-    decs : decs dec | dec
+import parser.ast_nodes as Node
+import ply.yacc as yacc
+from lexer.lex import tokens
 
-    dec : tdec | fdec | vdec
+# flake8: noqa ANN001
 
-    tdec : TYPE ID EQ type
+start = "expression"
 
-    type : ID | rec_fields | array_def
+# EMPTY
 
-    rec_fields : LBRACE tfields RBRACE | LBRACE RBRACE
 
-    array_def : ARRAY OF ID
+def p_empty(p):
+    "empty :"
+    pass
 
-    tfields : type_field | tfields COMMA type_field
 
-    type_field : ID COLON ID
+def p_empty_list(p):
+    "empty_list : empty"
+    p[0] = []
 
-    fdec : FUNCTION ID LPAREN RPAREN EQ exp
-         | FUNCTION ID LPAREN tfields RPAREN EQ exp
-         | FUNCTION ID LPAREN RPAREN COLON ID EQ exp
-         | FUNCTION ID LPAREN tfields RPAREN COLON ID EQ exp
 
-    vdec : VAR ID ASSIGN exp | VAR ID COLON ID ASSIGN exp
+# DECLARATION
 
-    exp : const
-        | seqexp
-        | call
-        | record
-        | opexp
-        | flow
-        | lval
-        | array
-        | assign
-        | let
 
-    const : integer | string | nil
-    integer : INT
-    string : STRING
-    nil : NIL
+def p_declaration_block(p):
+    """
+    declaration_block : empty_declaration_block
+                      | ne_declaration_block
+    """
+    p[0] = p[1]
 
-    seqexp : LPAREN exp_seq RPAREN
-    exp_seq : exp | exp_seq SEMICOLON exp
 
-    call : ID LPAREN RPAREN | ID LPAREN args RPAREN
-    args : args COMMA exp | exp
+def p_empty_declaration_block(p):
+    "empty_declaration_block : empty_list"
+    p[0] = Node.DeclarationBlock(position=p.lexer.lineno - 1, declarationList=p[1])
 
-    record : ID LBRACE RBRACE | ID LBRACE content RBRACE
-    content : ID EQ exp | content COMMA ID EQ exp
 
-    opexp : MINUS exp
-    | exp PLUS exp
-    | exp MINUS exp
-    | exp TIMES exp
-    | exp DIVIDE exp
-    | exp EQ exp
-    | exp NEQ exp
-    | exp LT exp
-    | exp LE exp
-    | exp GT exp
-    | exp GE exp
-    | exp AND exp
-    | exp OR exp
+def p_ne_declaration_block(p):
+    "ne_declaration_block : declaration_list"
+    p[0] = Node.DeclarationBlock(
+        position=p.slice[1].value[0].position, declarationList=p[1]
+    )
 
-    flow : BREAK
-         | WHILE exp DO exp
-         | IF exp THEN exp
-         | IF exp THEN exp ELSE exp
-         | FOR IS ASSIGN exp TO exp DO exp
 
-    lval : var
-    var : ID | ID opt_var
-    opt_var : DOT ID
-            | DOT ID opt_var
-            | LPAREN exp RPAREN
-            | LPAREN exp RPAREN opt_var
+def p_declaration(p):
+    """
+    declaration : type_dec_block
+                | variable_dec
+                | function_dec_block
+    """
+    p[0] = p[1]
 
-    array : ID LBRACK exp RBRACK OF exp
 
-    assign : var ASSIGN exp
+# Non-empty declaration list.
+def p_declaration_list(p):
+    """
+    declaration_list : declaration_list_iter
+                     | declaration_list_end
+    """
+    p[0] = p[1]
 
-    let : LET decs IN END
-        | LET decs IN exp_seq END
-'''
+
+def p_declaration_list_iter(p):
+    "declaration_list_iter : declaration_list declaration"
+    p[0] = p[1]
+    p[0].append(p[2])
+
+
+def p_declaration_list_end(p):
+    "declaration_list_end : declaration"
+    p[0] = [p[1]]
+
+
+def p_type_dec_block(p):
+    """
+    type_dec_block : type_dec_list
+    """
+    p[0] = Node.TypeDecBlock(position=p.slice[1].value[0].position, typeDecList=p[1])
+
+
+def p_type_dec(p):
+    "type_dec : TYPE ID EQ type"
+    p[0] = Node.TypeDec(position=p.lineno(1), name=p[2], type=p[4])
+
+
+# Non-empty type declaration list.
+def p_type_dec_list(p):
+    """
+    type_dec_list : type_dec_list_iter
+                  | type_dec_list_end
+    """
+    p[0] = p[1]
+
+
+def p_type_dec_list_iter(p):
+    "type_dec_list_iter : type_dec_list type_dec"
+    p[0] = p[1]
+    p[0].append(p[2])
+
+
+def p_type_dec_list_end(p):
+    "type_dec_list_end : type_dec"
+    p[0] = [p[1]]
+
+
+def p_type(p):
+    """
+    type : name_ty
+         | record_ty
+         | array_ty
+    """
+    p[0] = p[1]
+
+
+def p_name_ty(p):
+    "name_ty : ID"
+    p[0] = Node.NameTy(position=p.lineno(1), name=p[1])
+
+
+def p_record_ty(p):
+    """
+    record_ty : LBRACE empty_list RBRACE
+              | LBRACE field_list RBRACE
+    """
+    p[0] = Node.RecordTy(position=p.lineno(1), fieldList=p[2])
+
+
+def p_array_ty(p):
+    "array_ty : ARRAY OF ID"
+    p[0] = Node.ArrayTy(position=p.lineno(1), array=p[3])
+
+
+def p_field(p):
+    "field : ID COLON ID"
+    p[0] = Node.Field(position=p.lineno(1), name=p[1], type=p[3])
+
+
+# Non-empty record field list.
+def p_field_list(p):
+    """
+    field_list : field_list_end
+               | field_list_iter
+    """
+    p[0] = p[1]
+
+
+def p_field_list_iter(p):
+    "field_list_iter : field_list COMMA field"
+    p[0] = p[1]
+    p[0].append(p[3])
+
+
+def p_field_list_end(p):
+    "field_list_end : field"
+    p[0] = [p[1]]
+
+
+def p_variable_dec(p):
+    """
+    variable_dec : variable_dec_no_type
+                 | variable_dec_with_type
+    """
+    p[0] = p[1]
+
+
+def p_variable_dec_no_type(p):
+    "variable_dec_no_type : VAR ID ASSIGN expression"
+    p[0] = Node.VariableDec(position=p.lineno(1), name=p[2], type=None, exp=p[4])
+
+
+def p_variable_dec_with_type(p):
+    "variable_dec_with_type : VAR ID COLON ID ASSIGN expression"
+    p[0] = Node.VariableDec(position=p.lineno(1), name=p[2], type=p[4], exp=p[6])
+
+
+def p_function_dec_block(p):
+    """
+    function_dec_block : function_dec_list
+    """
+    p[0] = Node.FunctionDecBlock(
+        position=p.slice[1].value[0].position, functionDecList=p[1]
+    )
+
+
+def p_function_dec(p):
+    """
+    function_dec : function_dec_no_type
+                 | function_dec_with_type
+    """
+    p[0] = p[1]
+
+
+def p_function_dec_no_type(p):
+    "function_dec_no_type : FUNCTION ID LPAREN field_list RPAREN EQ expression"
+    p[0] = Node.FunctionDec(
+        position=p.lineno(1), name=p[2], params=p[4], returnType=None, body=p[7]
+    )
+
+
+def p_function_dec_with_type(p):
+    "function_dec_with_type : FUNCTION ID LPAREN field_list RPAREN COLON ID EQ expression"
+    p[0] = Node.FunctionDec(
+        position=p.lineno(1), name=p[2], params=p[4], returnType=p[7], body=p[9]
+    )
+
+
+# Non-empty function declaration list.
+def p_function_dec_list(p):
+    """
+    function_dec_list : function_dec_list_iter
+                      | function_dec_list_end
+    """
+    p[0] = p[1]
+
+
+def p_function_dec_list_iter(p):
+    "function_dec_list_iter : function_dec_list function_dec"
+    p[0] = p[1]
+    p[0].append(p[2])
+
+
+def p_function_dec_list_end(p):
+    "function_dec_list_end : function_dec"
+    p[0] = [p[1]]
+
+
+# EXPRESSION
+
+
+def p_expression(p):
+    """
+    expression : var_exp
+               | nil_exp
+               | int_exp
+               | string_exp
+               | call_exp
+               | op_exp
+               | record_exp
+               | seq_exp
+               | assign_exp
+               | if_exp
+               | while_exp
+               | break_exp
+               | for_exp
+               | let_exp
+               | array_exp
+    """
+    p[0] = p[1]
+
+
+def p_var_exp(p):
+    "var_exp : variable"
+    p[0] = Node.VarExp(position=p.slice[1].value.position, var=p[1])
+
+
+def p_nil_exp(p):
+    "nil_exp : NIL"
+    p[0] = Node.NilExp(position=p.lineno(1))
+
+
+def p_int_exp(p):
+    "int_exp : INT"
+    p[0] = Node.IntExp(position=p.lineno(1), int=p[1])
+
+
+def p_string_exp(p):
+    "string_exp : STRING"
+    p[0] = Node.StringExp(position=p.lineno(1), string=p[1])
+
+
+def p_call_exp(p):
+    "call_exp : ID LPAREN arg_list RPAREN"
+    p[0] = Node.CallExp(position=p.lineno(1), func=p[1], args=p[3])
+
+
+def p_arg_list(p):
+    """
+    arg_list : empty_list
+             | exp_list
+    """
+    p[0] = p[1]
+
+
+# Non-empty expression list.
+def p_exp_list(p):
+    """
+    exp_list : exp_list_iter
+             | exp_list_end
+    """
+    p[0] = p[1]
+
+
+def p_exp_list_iter(p):
+    "exp_list_iter : exp_list COMMA expression"
+    p[0] = p[1]
+    p[0].append(p[2])
+
+
+def p_exp_list_end(p):
+    "exp_list_end : expression"
+    p[0] = [p[1]]
+
+
+def p_op_exp(p):
+    """
+    op_exp : unary_minus_exp
+           | binary_plus_exp
+           | binary_minus_exp
+           | binary_times_exp
+           | binary_divide_exp
+           | binary_eq_exp
+           | binary_neq_exp
+           | binary_lt_exp
+           | binary_le_exp
+           | binary_gt_exp
+           | binary_ge_exp
+           | binary_and_exp
+           | binary_or_exp
+    """
+    p[0] = p[1]
+
+
+def p_unary_minus_exp(p):
+    "unary_minus_exp : MINUS expression"
+    p[0] = Node.OpExp(position=p.lineno(1), oper=Node.Oper.minus, left=0, right=p[2])
+
+
+def p_binary_plus_exp(p):
+    "binary_plus_exp : expression PLUS expression"
+    p[0] = Node.OpExp(position=p.lineno(2), oper=Node.Oper.plus, left=p[1], right=p[3])
+
+
+def p_binary_minus_exp(p):
+    "binary_minus_exp : expression MINUS expression"
+    p[0] = Node.OpExp(position=p.lineno(2), oper=Node.Oper.minus, left=p[1], right=p[3])
+
+
+def p_binary_times_exp(p):
+    "binary_times_exp : expression TIMES expression"
+    p[0] = Node.OpExp(position=p.lineno(2), oper=Node.Oper.times, left=p[1], right=p[3])
+
+
+def p_binary_divide_exp(p):
+    "binary_divide_exp : expression DIVIDE expression"
+    p[0] = Node.OpExp(
+        position=p.lineno(2), oper=Node.Oper.divide, left=p[1], right=p[3]
+    )
+
+
+def p_binary_eq_exp(p):
+    "binary_eq_exp : expression EQ expression"
+    p[0] = Node.OpExp(position=p.lineno(2), oper=Node.Oper.eq, left=p[1], right=p[3])
+
+
+def p_binary_neq_exp(p):
+    "binary_neq_exp : expression NEQ expression"
+    p[0] = Node.OpExp(position=p.lineno(2), oper=Node.Oper.neq, left=p[1], right=p[3])
+
+
+def p_binary_lt_exp(p):
+    "binary_lt_exp : expression LT expression"
+    p[0] = Node.OpExp(position=p.lineno(2), oper=Node.Oper.lt, left=p[1], right=p[3])
+
+
+def p_binary_le_exp(p):
+    "binary_le_exp : expression LE expression"
+    p[0] = Node.OpExp(position=p.lineno(2), oper=Node.Oper.le, left=p[1], right=p[3])
+
+
+def p_binary_gt_exp(p):
+    "binary_gt_exp : expression GT expression"
+    p[0] = Node.OpExp(position=p.lineno(2), oper=Node.Oper.gt, left=p[1], right=p[3])
+
+
+def p_binary_ge_exp(p):
+    "binary_ge_exp : expression GE expression"
+    p[0] = Node.OpExp(position=p.lineno(2), oper=Node.Oper.ge, left=p[1], right=p[3])
+
+
+def p_binary_and_exp(p):
+    "binary_and_exp : expression AND expression"
+    p[0] = Node.IfExp(
+        position=p.lineno(2), test=p[1], thenDo=p[3], elseDo=IntExp(int=0)
+    )
+
+
+def p_binary_or_exp(p):
+    "binary_or_exp : expression OR expression"
+    p[0] = Node.IfExp(
+        position=p.lineno(2), test=p[1], thenDo=IntExp(int=1), elseDo=p[3]
+    )
+
+
+def p_record_exp(p):
+    "record_exp : ID LBRACE exp_field_list RBRACE"
+    p[0] = Node.RecordExp(position=p.lineno(1), type=p[1], fields=p[3])
+
+
+def p_exp_field(p):
+    "exp_field : ID EQ expression"
+    p[0] = Node.ExpField(position=p.lineno(1), name=p[1], exp=p[3])
+
+
+def p_exp_field_list(p):
+    """
+    exp_field_list : empty_list
+                   | ne_exp_field_list
+    """
+    p[0] = p[1]
+
+
+# Non-empty expression list.
+def p_ne_exp_field_list(p):
+    """
+    ne_exp_field_list : ne_exp_field_list_iter
+                      | ne_exp_field_list_end
+    """
+    p[0] = p[1]
+
+
+def p_ne_exp_field_list_iter(p):
+    "ne_exp_field_list_iter : ne_exp_field_list COMMA exp_field"
+    p[0] = p[1]
+    p[0].append(p[3])
+
+
+def p_ne_exp_field_list_end(p):
+    "ne_exp_field_list_end : exp_field"
+    p[0] = [p[1]]
+
+
+def p_seq_exp(p):
+    "seq_exp : LPAREN ne_exp_seq SEMICOLON expression RPAREN"
+    p[2].append(p[4])
+    p[0] = Node.SeqExp(position=p.lineno(1), seq=p[2])
+
+
+# Non-empty expression sequence.
+def p_ne_exp_seq(p):
+    """
+    ne_exp_seq : ne_exp_seq_iter
+               | ne_exp_seq_end
+    """
+    p[0] = p[1]
+
+
+def p_ne_exp_seq_iter(p):
+    "ne_exp_seq_iter : ne_exp_seq SEMICOLON expression"
+    p[0] = p[1]
+    p[0].append(p[3])
+
+
+def p_ne_exp_seq_end(p):
+    "ne_exp_seq_end : expression"
+    p[0] = [p[1]]
+
+
+def p_assign_exp(p):
+    "assign_exp : variable ASSIGN expression"
+    p[0] = Node.AssignExp(position=p.lineno(2), var=p[1], exp=p[3])
+
+
+def p_if_exp(p):
+    "if_exp : IF expression THEN expression ELSE expression"
+    p[0] = Node.IfExp(position=p.lineno(1), test=p[2], then=p[4], elsee=p[6])
+
+
+def p_while_exp(p):
+    "while_exp : WHILE expression DO expression"
+    p[0] = Node.WhileExp(position=p.lineno(1), test=p[2], body=p[4])
+
+
+def p_break_exp(p):
+    "break_exp : BREAK"
+    p[0] = Node.BreakExp(position=p.lineno(1))
+
+
+def p_for_exp(p):
+    "for_exp : FOR variable ASSIGN expression TO expression DO expression"
+    p[0] = Node.ForExp(position=p.lineno(1), var=p[2], lo=p[4], hi=p[6], body=p[8])
+
+
+def p_let_exp(p):
+    """
+    let_exp : empty_let_exp
+            | ne_let_exp
+    """
+    p[0] = p[1]
+
+
+def p_empty_let_exp(p):
+    "empty_let_exp : LET declaration_block IN empty_list END"
+    p[0] = Node.LetExp(
+        position=p.lineno(1),
+        decs=p[2],
+        body=Node.SeqExp(position=p.lineno(3), seq=p[4]),
+    )
+
+
+def p_ne_let_exp(p):
+    "ne_let_exp : LET declaration_block IN ne_exp_seq END"
+    p[0] = Node.LetExp(
+        position=p.lineno(1),
+        decs=p[2],
+        body=Node.SeqExp(position=p.slice[4].value[0].position, seq=p[4]),
+    )
+
+
+def p_array_exp(p):
+    "array_exp : ID LBRACK expression RBRACK OF expression"
+    p[0] = Node.ArrayExp(position=p.lineno(1), type=p[1], size=p[3], init=p[6])
+
+
+# VARIABLE
+
+
+def p_variable(p):
+    """
+    variable : simple_var
+             | field_var
+             | subscript_var
+    """
+    p[0] = p[1]
+
+
+def p_simple_var(p):
+    "simple_var : ID"
+    p[0] = Node.SimpleVar(position=p.lineno(1), sym=p[1])
+
+
+def p_field_var(p):
+    "field_var : variable DOT ID"
+    p[0] = Node.FieldVar(position=p.lineno(2), var=p[1], sym=p[3])
+
+
+def p_subscript_var(p):
+    "subscript_var : variable LBRACK expression RBRACK"
+    p[0] = Node.SubscriptVar(position=p.lineno(2), var=p[1], exp=p[3])
+
+
+# ERROR
+class SyntacticError(Exception):
+    def __init__(self, value: str, position: int):
+        self.value = value
+        self.position = position
+
+    def __str__(self):
+        return f"Syntax error in input! Unexpected value {self.value} in line {self.position}"
+
+
+def p_error(p):
+    raise SyntacticError(p.value, p.lexer.lineno)
+
+
+# Build the parser
+parser = yacc.yacc()
