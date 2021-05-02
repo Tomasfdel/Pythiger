@@ -113,15 +113,14 @@ def translate_variable(
         trans_var = translate_variable(value_env, type_env, variable.var)
         if not isinstance(trans_var.type, RecordType):
             raise SemanticError(
-                f"Trying to access the {variable.sym} field of {variable.var}"
-                + ", but that variable is not a record",
+                f"Trying to access the {variable.sym} field of a variable that is not a record",
                 variable.var.position,
             )
         for field in trans_var.type.fields:
             if field.name == variable.sym:
                 return TypedExpression(TranslatedExpression(), field.type)
         raise SemanticError(
-            f"Unknown record field name {variable.sym} for variable {variable.var}",
+            f"Unknown record field name {variable.sym} for variable",
             variable.var.position,
         )
 
