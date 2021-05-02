@@ -238,7 +238,8 @@ def p_expression(p):
                | record_exp
                | seq_exp
                | assign_exp
-               | if_exp
+               | if_then_exp
+               | if_then_else_exp
                | while_exp
                | break_exp
                | for_exp
@@ -460,8 +461,13 @@ def p_assign_exp(p):
     p[0] = Node.AssignExp(position=p.lineno(2), var=p[1], exp=p[3])
 
 
-def p_if_exp(p):
-    "if_exp : IF expression THEN expression ELSE expression"
+def p_if_then_exp(p):
+    "if_then_exp : IF expression THEN expression"
+    p[0] = Node.IfExp(position=p.lineno(1), test=p[2], thenDo=p[4], elseDo=None)
+
+
+def p_if_then_else_exp(p):
+    "if_then_else_exp : IF expression THEN expression ELSE expression"
     p[0] = Node.IfExp(position=p.lineno(1), test=p[2], thenDo=p[4], elseDo=p[6])
 
 
@@ -476,7 +482,7 @@ def p_break_exp(p):
 
 
 def p_for_exp(p):
-    "for_exp : FOR variable ASSIGN expression TO expression DO expression"
+    "for_exp : FOR ID ASSIGN expression TO expression DO expression"
     p[0] = Node.ForExp(position=p.lineno(1), var=p[2], lo=p[4], hi=p[6], body=p[8])
 
 

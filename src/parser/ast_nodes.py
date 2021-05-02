@@ -161,7 +161,7 @@ class AssignExp(Expression):
 class IfExp(Expression):
     test: Expression
     thenDo: Expression
-    elseDo: Expression
+    elseDo: Optional[Expression]
 
 
 @dataclass
