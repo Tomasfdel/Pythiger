@@ -526,15 +526,18 @@ def p_subscript_var(p):
 
 
 # ERROR
+class SyntacticError(Exception):
+    def __init__(self, value: str, position: int):
+        self.value = value
+        self.position = position
+
+    def __str__(self):
+        return f"Syntax error in input! Unexpected value {self.value} in line {self.position}"
+
+
 def p_error(p):
-    print(
-        "Syntax error in input! Unexpected value '%s' in line %s."
-        % (p.value, p.lexer.lineno)
-    )
+    raise SyntacticError(p.value, p.lexer.lineno)
 
-
-# TODOSEBOI: How to break after first error?
-# Try except con custom exception.
 
 # Build the parser
 parser = yacc.yacc()
