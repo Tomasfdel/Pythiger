@@ -429,10 +429,10 @@ def p_ne_exp_field_list_end(p):
     p[0] = [p[1]]
 
 
-# TODO: This should be two or more.
 def p_seq_exp(p):
-    "seq_exp : LPAREN ne_exp_seq RPAREN"
-    p[0] = Node.SeqExp(position=p.lineno(1), seq=p[1])
+    "seq_exp : LPAREN ne_exp_seq SEMICOLON expression RPAREN"
+    p[2].append(p[4])
+    p[0] = Node.SeqExp(position=p.lineno(1), seq=p[2])
 
 
 # Non-empty expression sequence.
@@ -481,16 +481,29 @@ def p_for_exp(p):
 
 
 def p_let_exp(p):
-    "let_exp : LET declaration_block IN exp_seq END"
-    p[0] = Node.LetExp(position=p.lineno(1), decs=p[2], body=p[4])
-
-
-def p_exp_seq(p):
     """
-    exp_seq : empty_list
-            | ne_exp_seq
+    let_exp : empty_let_exp
+            | ne_let_exp
     """
     p[0] = p[1]
+
+
+def p_empty_let_exp(p):
+    "empty_let_exp : LET declaration_block IN empty_list END"
+    p[0] = Node.LetExp(
+        position=p.lineno(1),
+        decs=p[2],
+        body=Node.SeqExp(position=p.lineno(3), seq=p[4]),
+    )
+
+
+def p_ne_let_exp(p):
+    "ne_let_exp : LET declaration_block IN ne_exp_seq END"
+    p[0] = Node.LetExp(
+        position=p.lineno(1),
+        decs=p[2],
+        body=Node.SeqExp(position=p.slice[4].value[0].position, seq=p[4]),
+    )
 
 
 def p_array_exp(p):

@@ -186,7 +186,7 @@ class ForExp(Expression):
 @dataclass
 class LetExp(Expression):
     decs: DeclarationBlock
-    body: [Expression]
+    body: SeqExp
 
 
 @dataclass
