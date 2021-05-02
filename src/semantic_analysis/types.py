@@ -49,7 +49,9 @@ def are_types_equal(t1: Type, t2: Type) -> bool:
 
     return (
         isinstance(t1, NilType)
-        and isinstance(t2, NilType)
+        and (isinstance(t2, NilType) or isinstance(t2, RecordType))
+        or isinstance(t2, NilType)
+        and (isinstance(t1, NilType) or isinstance(t1, RecordType))
         or isinstance(t1, IntType)
         and isinstance(t2, IntType)
         or isinstance(t1, StringType)

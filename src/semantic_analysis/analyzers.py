@@ -32,12 +32,12 @@ class TypedExpression(object):
 
 
 class SemanticError(Exception):
-    def __init__(self, message: str, position: ast.Position):
+    def __init__(self, message: str, position: int):
         self.message = message
         self.position = position
 
     def __str__(self):
-        return f"{self.message} in line {self.position.lineNumber}"
+        return f"Compilation error! {self.message} in line {self.position}"
 
 
 def simplify_type_aliases(
@@ -287,7 +287,7 @@ def translate_expression(
             if not are_types_equal(expected_field_type, trans_exp.type):
                 raise SemanticError(
                     f"Assigning value of a wrong type to field {exp_field.name} in record creation",
-                    exp_field.exp.pos,
+                    exp_field.exp.position,
                 )
         if len(checked_fields) < len(trans_typ.fields):
             raise SemanticError(
@@ -337,22 +337,28 @@ def translate_expression(
                 "The condition of an If expression must be an Integer",
                 expression.test.position,
             )
-        trans_then = translate_expression(value_env, type_env, expression.then)
-        if expression.elsee is None:
+        trans_then = translate_expression(value_env, type_env, expression.thenDo)
+        if expression.elseDo is None:
             if not isinstance(trans_then.type, VoidType):
                 raise SemanticError(
                     "Then branch of an If expression must produce no value"
                     + " when there is no Else branch",
-                    expression.then.position,
+                    expression.thenDo.position,
                 )
             return TypedExpression(TranslatedExpression(), VoidType())
-        trans_else = translate_expression(value_env, type_env, expression.elsee)
+        trans_else = translate_expression(value_env, type_env, expression.elseDo)
         if not are_types_equal(trans_then.type, trans_else.type):
             raise SemanticError(
                 "Then and Else branches of an If expression must return values of the same type",
                 expression.position,
             )
-        return TypedExpression(TranslatedExpression(), trans_then.type)
+        # Special check in case one of the branches returns NilType and the other a RecordType.
+        # In that case, we should return the RecordType since it's the most generic one.
+        if isinstance(trans_then.type, NilType):
+            returned_type = trans_else.type
+        else:
+            returned_type = trans_then.type
+        return TypedExpression(TranslatedExpression(), returned_type)
 
     if isinstance(expression, ast.WhileExp):
         # While: Check that the condition is an Integer and that the body produces no value.
@@ -441,7 +447,7 @@ def translate_expression(
                 "Array size must be an Integer", expression.size.position
             )
         trans_init = translate_expression(value_env, type_env, expression.init)
-        if not are_types_equal(trans_typ, trans_init.type):
+        if not are_types_equal(trans_typ.type, trans_init.type):
             raise SemanticError(
                 "Array initial value must be of its declared type",
                 expression.init.position,
@@ -508,7 +514,7 @@ def translate_declaration(
                 )
             value_env.end_scope()
 
-    if isinstance(declaration, ast.VariableDec):
+    elif isinstance(declaration, ast.VariableDec):
         # Variable declaration: Translate the expression, make sure its type matches the declared
         # type and that a variable initialized to nil has a type declaration of a record type.
         trans_exp = translate_expression(value_env, type_env, declaration.exp)
@@ -541,7 +547,7 @@ def translate_declaration(
             value_env.add(declaration.name, VariableEntry(declared_type))
         value_env.add(declaration.name, VariableEntry(trans_exp.type))
 
-    if isinstance(declaration, ast.TypeDecBlock):
+    elif isinstance(declaration, ast.TypeDecBlock):
         # Type declaration block: Check that all type names are unique. Then, follow these steps:
         # - Add a dummy reference to the type environment for every type declaration, so as to be
         # able to recognize undefined types in the following step.
@@ -577,7 +583,8 @@ def translate_declaration(
             type_definition = type_env.find(type_dec.name)
             eliminate_name_types(type_definition, type_env)
 
-    raise SemanticError("Unknown declaration kind", declaration.position)
+    else:
+        raise SemanticError("Unknown declaration kind", declaration.position)
 
 
 def translate_type(type_env: SymbolTable[Type], ty: ast.Type) -> Type:

@@ -380,14 +380,14 @@ def p_binary_ge_exp(p):
 def p_binary_and_exp(p):
     "binary_and_exp : expression AND expression"
     p[0] = Node.IfExp(
-        position=p.lineno(2), test=p[1], thenDo=p[3], elseDo=IntExp(int=0)
+        position=p.lineno(2), test=p[1], thenDo=p[3], elseDo=Node.IntExp(int=0)
     )
 
 
 def p_binary_or_exp(p):
     "binary_or_exp : expression OR expression"
     p[0] = Node.IfExp(
-        position=p.lineno(2), test=p[1], thenDo=IntExp(int=1), elseDo=p[3]
+        position=p.lineno(2), test=p[1], thenDo=Node.IntExp(int=1), elseDo=p[3]
     )
 
 
@@ -462,7 +462,7 @@ def p_assign_exp(p):
 
 def p_if_exp(p):
     "if_exp : IF expression THEN expression ELSE expression"
-    p[0] = Node.IfExp(position=p.lineno(1), test=p[2], then=p[4], elsee=p[6])
+    p[0] = Node.IfExp(position=p.lineno(1), test=p[2], thenDo=p[4], elseDo=p[6])
 
 
 def p_while_exp(p):

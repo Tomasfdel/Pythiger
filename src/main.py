@@ -33,7 +33,7 @@ def main():
         return
 
     print("All good!")
-    print(analysed_program)
+    print(analysed_program.type)
 
 
 if __name__ == "__main__":
