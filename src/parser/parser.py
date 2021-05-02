@@ -2,14 +2,9 @@ import parser.ast_nodes as Node
 import ply.yacc as yacc
 from lexer.lex import tokens
 
-# TODO: Remove this line after finishing.
-import code
-
 # flake8: noqa ANN001
 
 start = "expression"
-
-# TODO: Run black and flake.
 
 # EMPTY
 
@@ -47,7 +42,6 @@ def p_ne_declaration_block(p):
     )
 
 
-# TODO: Add variable declaration.
 def p_declaration(p):
     """
     declaration : type_dec_block
@@ -385,12 +379,16 @@ def p_binary_ge_exp(p):
 
 def p_binary_and_exp(p):
     "binary_and_exp : expression AND expression"
-    p[0] = Node.IfExp(position=p.lineno(2), test=p[1], then=p[3], elsee=IntExp(int=0))
+    p[0] = Node.IfExp(
+        position=p.lineno(2), test=p[1], thenDo=p[3], elseDo=IntExp(int=0)
+    )
 
 
 def p_binary_or_exp(p):
     "binary_or_exp : expression OR expression"
-    p[0] = Node.IfExp(position=p.lineno(2), test=p[1], then=IntExp(int=1), elsee=p[3])
+    p[0] = Node.IfExp(
+        position=p.lineno(2), test=p[1], thenDo=IntExp(int=1), elseDo=p[3]
+    )
 
 
 def p_record_exp(p):

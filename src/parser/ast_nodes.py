@@ -160,8 +160,8 @@ class AssignExp(Expression):
 @dataclass
 class IfExp(Expression):
     test: Expression
-    then: Expression
-    elsee: Expression  # TODO: Por YHVH encontrar un nombre mejor.
+    thenDo: Expression
+    elseDo: Expression
 
 
 @dataclass
