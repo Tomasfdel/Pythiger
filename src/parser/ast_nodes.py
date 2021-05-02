@@ -1,22 +1,12 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from enum import Enum
 from dataclasses import dataclass
 from typing import Optional
 
 
-# TODO: Run black and flake.
-
-# TODO: Replace dummy ASTNode definiton.
-# class ASTNode(ABC):
-# @abstractmethod
-# def pretty_print(self):
-#     pass
-
-
 @dataclass
-class ASTNode:
+class ASTNode(ABC):
     position: int
-    pass
 
 
 class Declaration(ASTNode):
