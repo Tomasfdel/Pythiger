@@ -1,4 +1,3 @@
-from itertools import product
 from typing import Set, Optional, Union, List
 
 from dataclasses import dataclass
@@ -497,13 +496,11 @@ def translate_declaration(
             function_entry = FunctionEntry(formals, return_type)
             function_entries.append(function_entry)
             value_env.add(function_dec.name, function_entry)
-        for function_dec, function_entry in product(
+        for function_dec, function_entry in zip(
             declaration.functionDecList, function_entries
         ):
             value_env.begin_scope()
-            for param, formal_type in product(
-                function_dec.params, function_entry.formals
-            ):
+            for param, formal_type in zip(function_dec.params, function_entry.formals):
                 value_env.add(param.name, VariableEntry(formal_type))
             trans_exp = translate_expression(value_env, type_env, function_dec.body)
             if not are_types_equal(trans_exp.type, function_entry.result):

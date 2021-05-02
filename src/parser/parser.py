@@ -293,7 +293,7 @@ def p_exp_list(p):
 def p_exp_list_iter(p):
     "exp_list_iter : exp_list COMMA expression"
     p[0] = p[1]
-    p[0].append(p[2])
+    p[0].append(p[3])
 
 
 def p_exp_list_end(p):
