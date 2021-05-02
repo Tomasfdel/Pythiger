@@ -14,14 +14,6 @@ def main():
         f.close()
 
         lex.input(data)
-
-        # Tokenize
-        while True:
-            tok = lex.token()
-            if not tok:
-                break  # No more input
-            print(tok)
-
         result = p.parser.parse(data, le.lexer)
         print(result)
 
