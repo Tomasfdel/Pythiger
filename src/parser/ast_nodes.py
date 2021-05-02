@@ -47,6 +47,9 @@ class Oper(Enum):
     gt = 9
     ge = 10
 
+class Empty(ASTNode):
+    pass
+
 # DECLARATION
 
 @dataclass
@@ -88,14 +91,14 @@ class ArrayTy(Type):
 @dataclass
 class VariableDec(Declaration):
     name: str
-    type: Optional[Type]
+    type: Optional[str]
     exp: Expression
 
 @dataclass
 class FunctionDec(ASTNode):
     name: str
     params: [Field]
-    returnType: Optional[Type]
+    returnType: Optional[str]
     body: Expression
 
 @dataclass
@@ -174,7 +177,7 @@ class BreakExp(Expression):
 
 @dataclass
 class ForExp(Expression):
-    var: Variable
+    var: str
     lo: Expression
     hi: Expression
     body: Expression
