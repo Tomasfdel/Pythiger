@@ -245,6 +245,7 @@ def p_expression(p):
                | for_exp
                | let_exp
                | array_exp
+               | empty_exp
     """
     p[0] = p[1]
 
@@ -515,6 +516,11 @@ def p_ne_let_exp(p):
 def p_array_exp(p):
     "array_exp : ID LBRACK expression RBRACK OF expression"
     p[0] = Node.ArrayExp(position=p.lineno(1), type=p[1], size=p[3], init=p[6])
+
+
+def p_empty_exp(p):
+    "empty_exp : LPAREN RPAREN"
+    p[0] = Node.EmptyExp(position=p.lexer.lineno - 1)
 
 
 # VARIABLE
