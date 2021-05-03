@@ -240,7 +240,7 @@ def translate_expression(
                 or are_types_equal(left.type, StringType())
             ):
                 raise SemanticError(
-                    "Values must Integers or Strings to compare their order",
+                    "Values must be Integers or Strings to compare their order",
                     expression.position,
                 )
         else:
