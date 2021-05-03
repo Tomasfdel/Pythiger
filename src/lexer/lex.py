@@ -1,5 +1,7 @@
 # coding=utf-8
 
+# flake8: noqa ANN001
+
 # List of token names
 tokens = (
     # symbols
@@ -185,7 +187,7 @@ t_LT = r"\<"
 t_LE = r"\<\="
 t_GT = r"\>"
 t_GE = r"\>\="
-t_AND = r"\%"
+t_AND = r"\&"
 t_OR = r"\|"
 t_ASSIGN = r"\:\="
 
@@ -202,6 +204,7 @@ t_ANY_ignore = " \t"
 # To Do: Ver un manejo correcto de errores y como debería responder en cada caso
 def t_ANY_error(t):
     print("Illegal character '%s' in line '%s'" % (t.value[0], t.lineno))
+
 
 # Build the lexer
 from ply import lex as lex
