@@ -229,7 +229,8 @@ def p_function_dec_list_end(p):
 
 def p_expression(p):
     """
-    expression : var_exp
+    expression : paren_exp
+               | var_exp
                | nil_exp
                | int_exp
                | string_exp
@@ -248,6 +249,11 @@ def p_expression(p):
                | empty_exp
     """
     p[0] = p[1]
+
+
+def p_paren_exp(p):
+    "paren_exp : LPAREN expression RPAREN"
+    p[0] = p[2]
 
 
 def p_var_exp(p):
@@ -519,7 +525,7 @@ def p_array_exp(p):
 
 
 def p_empty_exp(p):
-    "empty_exp : LPAREN RPAREN"
+    "empty_exp : empty"
     p[0] = Node.EmptyExp(position=p.lexer.lineno - 1)
 
 
