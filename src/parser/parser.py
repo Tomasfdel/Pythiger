@@ -119,8 +119,7 @@ def p_name_ty(p):
 
 def p_record_ty(p):
     """
-    record_ty : LBRACE empty_list RBRACE
-              | LBRACE field_list RBRACE
+    record_ty : LBRACE field_list RBRACE
     """
     p[0] = Node.RecordTy(position=p.lineno(1), fieldList=p[2])
 
@@ -135,23 +134,31 @@ def p_field(p):
     p[0] = Node.Field(position=p.lineno(1), name=p[1], type=p[3])
 
 
-# Non-empty record field list.
 def p_field_list(p):
     """
-    field_list : field_list_end
-               | field_list_iter
+    field_list : empty_list
+               | ne_field_list
     """
     p[0] = p[1]
 
 
-def p_field_list_iter(p):
-    "field_list_iter : field_list COMMA field"
+# Non-empty record field or function parameter list.
+def p_ne_field_list(p):
+    """
+    ne_field_list : ne_field_list_end
+               | ne_field_list_iter
+    """
+    p[0] = p[1]
+
+
+def p_ne_field_list_iter(p):
+    "ne_field_list_iter : ne_field_list COMMA field"
     p[0] = p[1]
     p[0].append(p[3])
 
 
-def p_field_list_end(p):
-    "field_list_end : field"
+def p_ne_field_list_end(p):
+    "ne_field_list_end : field"
     p[0] = [p[1]]
 
 
