@@ -4,7 +4,18 @@ from lexer.lex import tokens
 
 # flake8: noqa ANN001
 
+# CONFIGURATION
+
 start = "expression"
+
+precedence = (
+    ("left", "OR"),
+    ("left", "AND"),
+    ("nonassoc", "EQ", "NEQ", "GT", "LT", "GE", "LE"),
+    ("left", "PLUS", "MINUS"),
+    ("left", "TIMES", "DIVIDE"),
+    ("right", "UMINUS"),  # Unary minus operator
+)
 
 # EMPTY
 
@@ -336,8 +347,13 @@ def p_op_exp(p):
 
 
 def p_unary_minus_exp(p):
-    "unary_minus_exp : MINUS expression"
-    p[0] = Node.OpExp(position=p.lineno(1), oper=Node.Oper.minus, left=0, right=p[2])
+    "unary_minus_exp : MINUS expression %prec UMINUS"
+    p[0] = Node.OpExp(
+        position=p.lineno(1),
+        oper=Node.Oper.minus,
+        left=Node.IntExp(position=p.lineno(1), int=0),
+        right=p[2],
+    )
 
 
 def p_binary_plus_exp(p):
