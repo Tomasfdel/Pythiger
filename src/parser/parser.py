@@ -525,6 +525,7 @@ def p_variable(p):
     variable : simple_var
              | field_var
              | subscript_var
+             | subscript_var_aux
     """
     p[0] = p[1]
 
@@ -543,6 +544,9 @@ def p_subscript_var(p):
     "subscript_var : variable LBRACK expression RBRACK"
     p[0] = Node.SubscriptVar(position=p.lineno(2), var=p[1], exp=p[3])
 
+def p_subscript_var_aux(p):
+    "subscript_var_aux : ID LBRACK expression RBRACK"
+    p[0] = Node.SubscriptVar(position=p.lineno(2), var=Node.SimpleVar(position=p.lineno(1), sym=p[1]), exp=p[3])
 
 # ERROR
 class SyntacticError(Exception):
