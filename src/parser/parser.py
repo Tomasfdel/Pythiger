@@ -9,6 +9,7 @@ from lexer.lex import tokens
 start = "expression"
 
 precedence = (
+    ("nonassoc", "ASSIGN"),
     ("left", "OR"),
     ("left", "AND"),
     ("nonassoc", "EQ", "NEQ", "GT", "LT", "GE", "LE"),
