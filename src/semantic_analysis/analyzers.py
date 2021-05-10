@@ -130,7 +130,7 @@ def translate_variable(
         trans_var = translate_variable(value_env, type_env, variable.var)
         if not isinstance(trans_var.type, ArrayType):
             raise SemanticError(
-                f"Trying to access a subscript of {variable.var}, but it is not an array",
+                "Trying to access a subscript of a variable that is not an array",
                 variable.var.position,
             )
         trans_exp = translate_expression(value_env, type_env, variable.exp)
