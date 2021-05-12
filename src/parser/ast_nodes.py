@@ -196,6 +196,11 @@ class ArrayExp(Expression):
     init: Expression
 
 
+@dataclass
+class EmptyExp(Expression):
+    pass
+
+
 # VARIABLE
 
 

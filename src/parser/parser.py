@@ -4,7 +4,19 @@ from lexer.lex import tokens
 
 # flake8: noqa ANN001
 
+# CONFIGURATION
+
 start = "expression"
+
+precedence = (
+    ("nonassoc", "ASSIGN"),
+    ("left", "OR"),
+    ("left", "AND"),
+    ("nonassoc", "EQ", "NEQ", "GT", "LT", "GE", "LE"),
+    ("left", "PLUS", "MINUS"),
+    ("left", "TIMES", "DIVIDE"),
+    ("right", "UMINUS"),  # Unary minus operator
+)
 
 # EMPTY
 
@@ -119,8 +131,7 @@ def p_name_ty(p):
 
 def p_record_ty(p):
     """
-    record_ty : LBRACE empty_list RBRACE
-              | LBRACE field_list RBRACE
+    record_ty : LBRACE field_list RBRACE
     """
     p[0] = Node.RecordTy(position=p.lineno(1), fieldList=p[2])
 
@@ -135,23 +146,31 @@ def p_field(p):
     p[0] = Node.Field(position=p.lineno(1), name=p[1], type=p[3])
 
 
-# Non-empty record field list.
 def p_field_list(p):
     """
-    field_list : field_list_end
-               | field_list_iter
+    field_list : empty_list
+               | ne_field_list
     """
     p[0] = p[1]
 
 
-def p_field_list_iter(p):
-    "field_list_iter : field_list COMMA field"
+# Non-empty record field or function parameter list.
+def p_ne_field_list(p):
+    """
+    ne_field_list : ne_field_list_end
+               | ne_field_list_iter
+    """
+    p[0] = p[1]
+
+
+def p_ne_field_list_iter(p):
+    "ne_field_list_iter : ne_field_list COMMA field"
     p[0] = p[1]
     p[0].append(p[3])
 
 
-def p_field_list_end(p):
-    "field_list_end : field"
+def p_ne_field_list_end(p):
+    "ne_field_list_end : field"
     p[0] = [p[1]]
 
 
@@ -229,7 +248,8 @@ def p_function_dec_list_end(p):
 
 def p_expression(p):
     """
-    expression : var_exp
+    expression : paren_exp
+               | var_exp
                | nil_exp
                | int_exp
                | string_exp
@@ -245,8 +265,14 @@ def p_expression(p):
                | for_exp
                | let_exp
                | array_exp
+               | empty_exp
     """
     p[0] = p[1]
+
+
+def p_paren_exp(p):
+    "paren_exp : LPAREN expression RPAREN"
+    p[0] = p[2]
 
 
 def p_var_exp(p):
@@ -322,8 +348,13 @@ def p_op_exp(p):
 
 
 def p_unary_minus_exp(p):
-    "unary_minus_exp : MINUS expression"
-    p[0] = Node.OpExp(position=p.lineno(1), oper=Node.Oper.minus, left=0, right=p[2])
+    "unary_minus_exp : MINUS expression %prec UMINUS"
+    p[0] = Node.OpExp(
+        position=p.lineno(1),
+        oper=Node.Oper.minus,
+        left=Node.IntExp(position=p.lineno(1), int=0),
+        right=p[2],
+    )
 
 
 def p_binary_plus_exp(p):
@@ -381,14 +412,20 @@ def p_binary_ge_exp(p):
 def p_binary_and_exp(p):
     "binary_and_exp : expression AND expression"
     p[0] = Node.IfExp(
-        position=p.lineno(2), test=p[1], thenDo=p[3], elseDo=Node.IntExp(int=0)
+        position=p.lineno(2),
+        test=p[1],
+        thenDo=p[3],
+        elseDo=Node.IntExp(position=p.lineno(2), int=0),
     )
 
 
 def p_binary_or_exp(p):
     "binary_or_exp : expression OR expression"
     p[0] = Node.IfExp(
-        position=p.lineno(2), test=p[1], thenDo=Node.IntExp(int=1), elseDo=p[3]
+        position=p.lineno(2),
+        test=p[1],
+        thenDo=Node.IntExp(position=p.lineno(2), int=1),
+        elseDo=p[3],
     )
 
 
@@ -517,6 +554,11 @@ def p_array_exp(p):
     p[0] = Node.ArrayExp(position=p.lineno(1), type=p[1], size=p[3], init=p[6])
 
 
+def p_empty_exp(p):
+    "empty_exp : empty"
+    p[0] = Node.EmptyExp(position=p.lexer.lineno - 1)
+
+
 # VARIABLE
 
 
@@ -544,9 +586,15 @@ def p_subscript_var(p):
     "subscript_var : variable LBRACK expression RBRACK"
     p[0] = Node.SubscriptVar(position=p.lineno(2), var=p[1], exp=p[3])
 
+
 def p_subscript_var_aux(p):
     "subscript_var_aux : ID LBRACK expression RBRACK"
-    p[0] = Node.SubscriptVar(position=p.lineno(2), var=Node.SimpleVar(position=p.lineno(1), sym=p[1]), exp=p[3])
+    p[0] = Node.SubscriptVar(
+        position=p.lineno(2),
+        var=Node.SimpleVar(position=p.lineno(1), sym=p[1]),
+        exp=p[3],
+    )
+
 
 # ERROR
 class SyntacticError(Exception):
