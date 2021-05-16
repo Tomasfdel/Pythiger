@@ -452,6 +452,9 @@ def translate_expression(
             )
         return TypedExpression(TranslatedExpression(), trans_typ)
 
+    if isinstance(expression, ast.EmptyExp):
+        return TypedExpression(TranslatedExpression(), VoidType())
+
     raise SemanticError("Unknown expression kind", expression.position)
 
 

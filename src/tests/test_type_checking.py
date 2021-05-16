@@ -60,13 +60,17 @@ class TestTypeChecking(unittest.TestCase):
         self._assert_is_expected_array(type_check("test2.tig"), sem.IntType)
 
     def test_example_3(self):
-        self._assert_is_expected_record(type_check("test3.tig"), [sem.StringType, sem.IntType])
+        self._assert_is_expected_record(
+            type_check("test3.tig"), [sem.StringType, sem.IntType]
+        )
 
     def test_example_4(self):
         self._assert_is_expected_type(type_check("test4.tig"), sem.IntType)
 
     def test_example_5(self):
-        self._assert_is_expected_record(type_check("test5.tig"), [sem.IntType, sem.RecordType])
+        self._assert_is_expected_record(
+            type_check("test5.tig"), [sem.IntType, sem.RecordType]
+        )
 
     def test_example_6(self):
         self._assert_is_expected_type(type_check("test6.tig"), sem.VoidType)
@@ -78,102 +82,199 @@ class TestTypeChecking(unittest.TestCase):
         self._assert_is_expected_type(type_check("test8.tig"), sem.IntType)
 
     def test_example_9(self):
-        self.assertEqual(type_check("test9.tig"), "Compilation error! Then and Else branches of an If expression must return values of the same type in line 3")
+        self.assertEqual(
+            type_check("test9.tig"),
+            "Compilation error! Then and Else branches of an If expression must return values "
+            + "of the same type in line 3",
+        )
 
     def test_example_10(self):
-        self.assertEqual(type_check("test10.tig"), "Compilation error! While body must produce no value in line 2")
+        self.assertEqual(
+            type_check("test10.tig"),
+            "Compilation error! While body must produce no value in line 2",
+        )
 
     def test_example_11(self):
-        self.assertEqual(type_check("test11.tig"), "Compilation error! Ending value for loop variable in a For expression must be an Integer in line 2")
+        self.assertEqual(
+            type_check("test11.tig"),
+            "Compilation error! Ending value for loop variable in a For expression must be "
+            + "an Integer in line 2",
+        )
 
-    # TODO: Uncomment when empty expression is implemented in semantic analysis.
-    # def test_example_12(self):
-    #     self._assert_is_expected_type(type_check("test12.tig"), sem.VoidType)
+    def test_example_12(self):
+        self._assert_is_expected_type(type_check("test12.tig"), sem.VoidType)
 
     def test_example_13(self):
-        self.assertEqual(type_check("test13.tig"), "Compilation error! Values must be of the same type to test for equality or order in line 3")
+        self.assertEqual(
+            type_check("test13.tig"),
+            "Compilation error! Values must be of the same type to test for equality or order "
+            + "in line 3",
+        )
 
     def test_example_14(self):
-        self.assertEqual(type_check("test14.tig"), "Compilation error! Values must be of the same type to test for equality or order in line 12")
+        self.assertEqual(
+            type_check("test14.tig"),
+            "Compilation error! Values must be of the same type to test for equality or order "
+            + "in line 12",
+        )
 
     def test_example_15(self):
-        self.assertEqual(type_check("test15.tig"), "Compilation error! Then branch of an If expression must produce no value when there is no Else branch in line 3")
+        self.assertEqual(
+            type_check("test15.tig"),
+            "Compilation error! Then branch of an If expression must produce no value when "
+            + "there is no Else branch in line 3",
+        )
 
     def test_example_16(self):
-        self.assertEqual(type_check("test16.tig"), "Compilation error! Cyclic type definition found involving type a in line 4")
+        self.assertEqual(
+            type_check("test16.tig"),
+            "Compilation error! Cyclic type definition found involving type a in line 4",
+        )
 
     def test_example_17(self):
-        self.assertEqual(type_check("test17.tig"), "Compilation error! Undefined record field type treelist in line 4")
+        self.assertEqual(
+            type_check("test17.tig"),
+            "Compilation error! Undefined record field type treelist in line 4",
+        )
 
     def test_example_18(self):
-        self.assertEqual(type_check("test18.tig"), "Compilation error! Undefined function do_nothing2 in line 5")
+        self.assertEqual(
+            type_check("test18.tig"),
+            "Compilation error! Undefined function do_nothing2 in line 5",
+        )
 
     def test_example_19(self):
-        self.assertEqual(type_check("test19.tig"), "Compilation error! Undefined variable a in line 8")
+        self.assertEqual(
+            type_check("test19.tig"),
+            "Compilation error! Undefined variable a in line 8",
+        )
 
     def test_example_20(self):
-        self.assertEqual(type_check("test20.tig"), "Compilation error! Undefined variable i in line 3")
+        self.assertEqual(
+            type_check("test20.tig"),
+            "Compilation error! Undefined variable i in line 3",
+        )
 
     def test_example_21(self):
-        self.assertEqual(type_check("test21.tig"), "Compilation error! Right arithmetic operand must be an Integer in line 8")
+        self.assertEqual(
+            type_check("test21.tig"),
+            "Compilation error! Right arithmetic operand must be an Integer in line 8",
+        )
 
     def test_example_22(self):
-        self.assertEqual(type_check("test22.tig"), "Compilation error! Unknown record field name nam for variable in line 7")
+        self.assertEqual(
+            type_check("test22.tig"),
+            "Compilation error! Unknown record field name nam for variable in line 7",
+        )
 
     def test_example_23(self):
-        self.assertEqual(type_check("test23.tig"), "Compilation error! Trying to assign a value to a variable of a different type in line 7")
+        self.assertEqual(
+            type_check("test23.tig"),
+            "Compilation error! Trying to assign a value to a variable of a different type "
+            + "in line 7",
+        )
 
     def test_example_24(self):
-        self.assertEqual(type_check("test24.tig"), "Compilation error! Trying to access a subscript of a variable that is not an array in line 5")
+        self.assertEqual(
+            type_check("test24.tig"),
+            "Compilation error! Trying to access a subscript of a variable that is not an array "
+            + "in line 5",
+        )
 
     def test_example_25(self):
-        self.assertEqual(type_check("test25.tig"), "Compilation error! Trying to access the f field of a variable that is not a record in line 5")
+        self.assertEqual(
+            type_check("test25.tig"),
+            "Compilation error! Trying to access the f field of a variable that is not a record "
+            + "in line 5",
+        )
 
     def test_example_26(self):
-        self.assertEqual(type_check("test26.tig"), "Compilation error! Right arithmetic operand must be an Integer in line 3")
+        self.assertEqual(
+            type_check("test26.tig"),
+            "Compilation error! Right arithmetic operand must be an Integer in line 3",
+        )
 
     def test_example_27(self):
         self._assert_is_expected_type(type_check("test27.tig"), sem.IntType)
 
     def test_example_28(self):
-        self.assertEqual(type_check("test28.tig"), "Compilation error! Initial value for variable rec1 is not of its declared type rectype1 in line 7")
+        self.assertEqual(
+            type_check("test28.tig"),
+            "Compilation error! Initial value for variable rec1 is not of its declared type "
+            + "rectype1 in line 7",
+        )
 
     def test_example_29(self):
-        self.assertEqual(type_check("test29.tig"), "Compilation error! Initial value for variable arr1 is not of its declared type arrtype1 in line 7")
+        self.assertEqual(
+            type_check("test29.tig"),
+            "Compilation error! Initial value for variable arr1 is not of its declared type "
+            + "arrtype1 in line 7",
+        )
 
     def test_example_30(self):
         self._assert_is_expected_type(type_check("test30.tig"), sem.IntType)
 
     def test_example_31(self):
-        self.assertEqual(type_check("test31.tig"), "Compilation error! Initial value for variable a is not of its declared type int in line 3")
+        self.assertEqual(
+            type_check("test31.tig"),
+            "Compilation error! Initial value for variable a is not of its declared type int "
+            + "in line 3",
+        )
 
     def test_example_32(self):
-        self.assertEqual(type_check("test32.tig"), "Compilation error! Array initial value must be of its declared type in line 6")
+        self.assertEqual(
+            type_check("test32.tig"),
+            "Compilation error! Array initial value must be of its declared type in line 6",
+        )
 
     def test_example_33(self):
-        self.assertEqual(type_check("test33.tig"), "Compilation error! Undefined record type rectype in line 3")
+        self.assertEqual(
+            type_check("test33.tig"),
+            "Compilation error! Undefined record type rectype in line 3",
+        )
 
     def test_example_34(self):
-        self.assertEqual(type_check("test34.tig"), "Compilation error! Wrong type for argument in position 0 in call to g in line 5")
+        self.assertEqual(
+            type_check("test34.tig"),
+            "Compilation error! Wrong type for argument in position 0 in call to g in line 5",
+        )
 
     def test_example_35(self):
-        self.assertEqual(type_check("test35.tig"), "Compilation error! Wrong number of arguments in function call to g, 2 expected, but 1 given in line 5")
+        self.assertEqual(
+            type_check("test35.tig"),
+            "Compilation error! Wrong number of arguments in function call to g, 2 expected, "
+            + "but 1 given in line 5",
+        )
 
     def test_example_36(self):
-        self.assertEqual(type_check("test36.tig"), "Compilation error! Wrong number of arguments in function call to g, 2 expected, but 3 given in line 5")
+        self.assertEqual(
+            type_check("test36.tig"),
+            "Compilation error! Wrong number of arguments in function call to g, 2 expected, "
+            + "but 3 given in line 5",
+        )
 
     def test_example_37(self):
         self._assert_is_expected_type(type_check("test37.tig"), sem.IntType)
 
     def test_example_38(self):
-        self.assertEqual(type_check("test38.tig"), "Compilation error! All names in the type declaration block must be unique in line 5")
+        self.assertEqual(
+            type_check("test38.tig"),
+            "Compilation error! All names in the type declaration block must be unique in line 5",
+        )
 
     def test_example_39(self):
-        self.assertEqual(type_check("test39.tig"), "Compilation error! All names in the function declaration block must be unique in line 5")
+        self.assertEqual(
+            type_check("test39.tig"),
+            "Compilation error! All names in the function declaration block must be unique "
+            + "in line 5",
+        )
 
     def test_example_40(self):
-        self.assertEqual(type_check("test40.tig"), "Compilation error! Function g returns a value of a type different than its declared type in line 3")
-
+        self.assertEqual(
+            type_check("test40.tig"),
+            "Compilation error! Function g returns a value of a type different than "
+            + "its declared type in line 3",
+        )
 
     def test_example_41(self):
         self._assert_is_expected_type(type_check("test41.tig"), sem.IntType)
@@ -181,15 +282,21 @@ class TestTypeChecking(unittest.TestCase):
     def test_example_42(self):
         self._assert_is_expected_type(type_check("test42.tig"), sem.VoidType)
 
-    # TODO: Uncomment when empty expression is implemented in semantic analysis.
-    # def test_example_43(self):
-    #     self.assertEqual(type_check("test43.tig"), "Che amigo estas sumando un unit.")
+    def test_example_43(self):
+        self.assertEqual(
+            type_check("test43.tig"),
+            "Compilation error! Left arithmetic operand must be an Integer in line 6",
+        )
 
     def test_example_44(self):
         self._assert_is_expected_type(type_check("test44.tig"), sem.VoidType)
 
     def test_example_45(self):
-        self.assertEqual(type_check("test45.tig"), "Compilation error! Must declare the type of variable a when initializing it to nil in line 5")
+        self.assertEqual(
+            type_check("test45.tig"),
+            "Compilation error! Must declare the type of variable a when initializing it to nil "
+            + "in line 5",
+        )
 
     def test_example_46(self):
         self._assert_is_expected_type(type_check("test46.tig"), sem.IntType)
@@ -201,7 +308,10 @@ class TestTypeChecking(unittest.TestCase):
         self._assert_is_expected_type(type_check("test48.tig"), sem.IntType)
 
     def test_example_49(self):
-        self.assertEqual(type_check("test49.tig"), "Syntax error in input! Unexpected value nil in line 5")
+        self.assertEqual(
+            type_check("test49.tig"),
+            "Syntax error in input! Unexpected value nil in line 5",
+        )
 
     def test_example_merge(self):
         self._assert_is_expected_type(type_check("merge.tig"), sem.VoidType)
