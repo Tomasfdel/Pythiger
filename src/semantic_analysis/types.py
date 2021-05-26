@@ -1,9 +1,10 @@
+from abc import ABC
 from typing import List
 
 from dataclasses import dataclass
 
 
-class Type:
+class Type(ABC):
     pass
 
 

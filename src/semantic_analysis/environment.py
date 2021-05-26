@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import List
 
 from dataclasses import dataclass
@@ -6,7 +7,7 @@ from semantic_analysis.table import SymbolTable
 from semantic_analysis.types import Type, IntType, StringType, VoidType
 
 
-class EnvironmentEntry:
+class EnvironmentEntry(ABC):
     pass
 
 
