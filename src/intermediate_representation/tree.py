@@ -1,6 +1,6 @@
 from abc import ABC
 from enum import Enum, auto
-from typing import Any, Optional
+from typing import Optional
 
 from dataclasses import dataclass
 
@@ -116,9 +116,8 @@ class Call(Expression):
     arguments: [Expression]
 
 
-# TODO: See if I can make these Any a bit more strict.
 @dataclass
 class Condition:
     statement: Statement
-    trues: [Any]
-    falses: [Any]
+    trues: [ConditionalJump]
+    falses: [ConditionalJump]

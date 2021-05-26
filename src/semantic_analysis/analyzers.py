@@ -3,6 +3,7 @@ from typing import Set, Optional, Union, List
 from dataclasses import dataclass
 
 import parser.ast_nodes as ast
+from intermediate_representation.translated_expression import TranslatedExpression
 from semantic_analysis.environment import EnvironmentEntry, VariableEntry, FunctionEntry
 from semantic_analysis.table import SymbolTable
 from semantic_analysis.types import (
@@ -19,13 +20,8 @@ from semantic_analysis.types import (
 )
 
 
-# TODO: This should be moved somewhere else once we move into expression translation.
-class TranslatedExpression(object):
-    pass
-
-
 @dataclass
-class TypedExpression(object):
+class TypedExpression:
     expression: TranslatedExpression
     type: Type
 
