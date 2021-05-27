@@ -2,8 +2,7 @@ from typing import List
 
 from dataclasses import dataclass
 
-from intermediate_representation.translated_expression import Expression
-from intermediate_representation.tree import Statement
+from intermediate_representation.tree import Expression, Statement
 from temp import Temp, TempLabel, TempManager
 from abc import ABC
 
@@ -88,12 +87,12 @@ def frame_exp(access: FrameAccess, frame_ptr: Expression) -> Expression:
 
 # Sometimes we will need to call external functions that as written in C or assembly language
 # (such as a function that allocates memory for a Tiger array).
-# However, sometimes the C compiler puts an underscore at the beginning of each label, or the
-# calling convention for C functions may differ from those of Tiger functions. All these target
+# However, sometimes the C compiler puts an underscore at the beginning of each label, or
+# the calling convention for C functions may differ from those of Tiger functions. All these target
 # machine specific details should be encapsulated in this function, which creates a Tree expression
 # that creates the relevant function call. The simplest form for this function would be something
-# like return T_Call(T_Name(Temp_namedlabel(s)), args); ,
-# but it may have to be adapted for static links, underscores in labels, and so on.
+# like return T_Call(T_Name(Temp_namedlabel(s)), args); , but it may have to be adapted for
+# static links, underscores in labels, and so on.
 def external_call(function_name: str, arguments: List[Expression]) -> Expression:
     pass
 
