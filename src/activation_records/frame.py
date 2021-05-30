@@ -52,10 +52,10 @@ class Frame:
 
     # Allocates a new local variable in the frame. The "escape"
     # variable indicates whether the variable escapes or not
-    def alloc_local(self, escape: bool) -> InFrame:
+    def alloc_local(self, escape: bool) -> Access:
         return self.alloc_single_var(escape)
 
-    def alloc_single_var(self, escape: bool) -> InFrame:
+    def alloc_single_var(self, escape: bool) -> Access:
         if escape:
             self.offset -= 8
             self.formalParameters.append(InFrame(self.offset))
