@@ -38,25 +38,28 @@ class Frame:
         # The previous %rbp value is stored at %rbp.
         # Non-volatile registers are stored starting at -8(%rbp).
         self.offset = -8
-        # List of "accesses" denoting the locations where
-        # the formal parameters will be kept at run time, as seen from
-        # inside the callee.
+        # [Access] denoting the locations where the formal parameters will be
+        # kept at run time, as seen from inside the callee.
         self.formalParameters = []
+        # The same but for local variables.
+        self.localVariables = []
         for escape in formal_escapes:
-            self.alloc_single_var(escape)
+            self._alloc_single_var(escape, self.formalParameters)
 
     # Allocates a new local variable in the frame. The "escape"
-    # variable indicates whether the variable escapes or not
+    # variable indicates whether the variable escapes or not.
     def alloc_local(self, escape: bool) -> Access:
-        return self.alloc_single_var(escape)
+        return self._alloc_single_var(escape, self.localVariables)
 
-    def alloc_single_var(self, escape: bool) -> Access:
+    # Allocates a single variable or parameter in the frame and adds it
+    # to accessList.
+    def _alloc_single_var(self, escape: bool, accessList: [Access]) -> Access:
         if escape:
             self.offset -= 8
-            self.formalParameters.append(InFrame(self.offset))
+            accessList.append(InFrame(self.offset))
         else:
-            self.formalParameters.append(InRegister(TempManager.new_temp()))
-        return self.formalParameters[-1]
+            accessList.append(InRegister(TempManager.new_temp()))
+        return accessList[-1]
 
     # Instructions required for "view shift".
 
