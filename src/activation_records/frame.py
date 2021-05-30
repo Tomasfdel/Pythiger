@@ -7,36 +7,31 @@ from temp import Temp, TempLabel, TempManager
 from abc import ABC
 
 
-# La clase Access describe formals y locals que están en frame
-# o en registros. Esto es un tipo de dato abstracto, por lo que el
-# contenido es visible solamente en la clase Frame.
-# Fijate si podes poner Access solo total el modulo te maskea los
-# nombres.
+# Access describes formals and locals stored in a frame or in registers.
 class Access(ABC):
     pass
 
 
-# InFrame(X) indica una ubicación de memoria en el offset X respecto
-# al frame pointer, es decir, %rbp.
+# InFrame(X) indicates a memory location at offset X from the frame pointer.
 @dataclass
 class InFrame(Access):
     offset: int
 
 
-# InReg(t84) indica que se va a mantener en el "registro" t84.
+# InReg(t84) indicates storage in the "register" t84.
 @dataclass
 class InRegister(Access):
     register: Temp
 
 
-# it's a data structure holding:
-# the locations of all the formals
-# instructions required to implement the "view shift"
-# the number of locals allocated so far
-# the label at which the function's machine code is to begin.
+# Frame is the class responsible for:
+# * the locations of all the formals.
+# * instructions required to implement the "view shift".
+# * the number of locals allocated so far.
+# * the label at which the function's machine code is to begin.
 class Frame:
     # Creates a new frame for function "name" with "formalEscapes" list of
-    # booleans(list of parameters for function "name"). True means
+    # booleans (list of parameters for function "name"). True means
     # escaped variable.
     def __init__(self, name: TempLabel, formal_escapes: [bool]):
         self.name = name
@@ -63,9 +58,9 @@ class Frame:
             self.formalParameters.append(InRegister(TempManager.new_temp()))
         return self.formalParameters[-1]
 
-    # Instruciones requeridas para implementar "cambio de vista"
+    # Instructions required for "view shift".
 
-    # El numero de locales alocados hasta el momento
+    # Number of allocated locals so far.
 
 
 # Extra definitions found on Chapter 7. Feel free to rename them as you consider.
