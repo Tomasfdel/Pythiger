@@ -30,6 +30,9 @@ class InRegister(Access):
 # * the number of locals allocated so far.
 # * the label at which the function's machine code is to begin.
 class Frame:
+    # Constant for the machine's word size.
+    wordSize = 8
+
     # Creates a new frame for function "name" with "formalEscapes" list of
     # booleans (list of parameters for function "name"). True means
     # escaped variable.
@@ -37,7 +40,7 @@ class Frame:
         self.name = name
         # The previous %rbp value is stored at %rbp.
         # Non-volatile registers are stored starting at -8(%rbp).
-        self.offset = -8
+        self.offset = -Frame.wordSize
         # [Access] denoting the locations where the formal parameters will be
         # kept at run time, as seen from inside the callee.
         self.formalParameters = []
@@ -55,7 +58,7 @@ class Frame:
     # to accessList.
     def _alloc_single_var(self, escape: bool, accessList: [Access]) -> Access:
         if escape:
-            self.offset -= 8
+            self.offset -= Frame.wordSize
             accessList.append(InFrame(self.offset))
         else:
             accessList.append(InRegister(TempManager.new_temp()))
@@ -71,9 +74,6 @@ class Frame:
 # Frame pointer register FP.
 # It is %rpb if I'm not mistaken.
 # F_FP: Temp
-
-# Constant for the machine's word size.
-# F_wordSize: int
 
 # This function is used by Translate to turn a Frame_access into an intermediate representation
 # Tree expression. The Tree_exp argument is the address of the stack frame that the access lives in.
