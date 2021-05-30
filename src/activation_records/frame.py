@@ -12,20 +12,20 @@ from abc import ABC
 # contenido es visible solamente en la clase Frame.
 # Fijate si podes poner Access solo total el modulo te maskea los
 # nombres.
-class FrameAccess(ABC):
+class Access(ABC):
     pass
 
 
 # InFrame(X) indica una ubicación de memoria en el offset X respecto
 # al frame pointer, es decir, %rbp.
 @dataclass
-class InFrame(FrameAccess):
+class InFrame(Access):
     offset: int
 
 
 # InReg(t84) indica que se va a mantener en el "registro" t84.
 @dataclass
-class InRegister(FrameAccess):
+class InRegister(Access):
     register: Temp
 
 
@@ -71,17 +71,17 @@ class Frame:
 # Extra definitions found on Chapter 7. Feel free to rename them as you consider.
 
 # Frame pointer register FP.
+# It is %rpb if I'm not mistaken.
 # F_FP: Temp
 
 # Constant for the machine's word size.
 # F_wordSize: int
 
-
 # This function is used by Translate to turn a Frame_access into an intermediate representation
 # Tree expression. The Tree_exp argument is the address of the stack frame that the access lives in.
 # If acc is a register access, such as InReg(t82), then the frame address argument will be discarded
 # and the result will be simply Temp(t82).
-def frame_exp(access: FrameAccess, frame_ptr: Expression) -> Expression:
+def frame_exp(access: Access, frame_ptr: Expression) -> Expression:
     pass
 
 
