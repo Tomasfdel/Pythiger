@@ -46,22 +46,6 @@ class Frame:
     # Constant for the machine's word size.
     wordSize = 8
 
-    # This function is used by Translate to turn a Frame_access into an
-    # intermediate representation Tree expression. The Tree_exp argument is the
-    # address of the stack frame that the access lives in. If acc is a register
-    # access, such as InReg(t82), then the frame address argument will be
-    # discarded and the result will be simply Temp(t82).
-    @classmethod
-    def access_to_exp(access: Access, frame_pointer: IRT.Expression) -> IRT.Expression:
-        if isinstance(access, InFrame):
-            return IRT.Memory(
-                IRT.BinaryOperation(
-                    IRT.BinaryOperator.plus, frame_pointer, IRT.Constant(access.offset)
-                )
-            )
-        if isinstance(access, InRegister):
-            return IRT.Temporary(access.register)
-
     # Creates a new frame for function "name" with "formalEscapes" list of
     # booleans (list of parameters for function "name"). True means
     # escaped variable.
@@ -103,6 +87,20 @@ class Frame:
 # Extra definitions found on Chapter 7. Feel free to rename them as you consider.
 
 
+# This function is used by Translate to turn a Frame_access into an intermediate representation
+# Tree expression. The Tree_exp argument is the address of the stack frame that the access lives in.
+# If acc is a register access, such as InReg(t82), then the frame address argument will be discarded
+def access_to_exp(access: Access, frame_pointer: IRT.Expression) -> IRT.Expression:
+    if isinstance(access, InFrame):
+        return IRT.Memory(
+            IRT.BinaryOperation(
+                IRT.BinaryOperator.plus, frame_pointer, IRT.Constant(access.offset)
+            )
+        )
+    if isinstance(access, InRegister):
+        return IRT.Temporary(access.register)
+
+
 # Sometimes we will need to call external functions that as written in C or assembly language
 # (such as a function that allocates memory for a Tiger array).
 # However, sometimes the C compiler puts an underscore at the beginning of each label, or
@@ -120,8 +118,15 @@ def external_call(
 # This applies the view shift of calling a function, which is explained in Chapter 6.
 # Looks like this method is explained later, so we can use a dummy implementation
 # that just returns stm for now.
-def F_procEntryExit1(frame: Frame, statement: IRT.Statement) -> IRT.Statement:
+# The implementation of this function will be discussed on page 261.
+def proc_entry_exit1(frame: Frame, statement: IRT.Statement) -> IRT.Statement:
     return statement
+
+
+# TODO: Cosa que existe pero problema del futuro.
+# page 261
+def proc_entry_exit3():
+    pass
 
 
 class Fragment(ABC):
