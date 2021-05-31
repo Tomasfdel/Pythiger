@@ -2,9 +2,9 @@ from typing import List
 
 from dataclasses import dataclass
 
-from intermediate_representation.tree import Expression, Statement
-from temp import Temp, TempLabel, TempManager
 from abc import ABC
+import intermediate_representation.tree as IRT
+from temp import Temp, TempLabel, TempManager
 
 
 # Access describes formals and locals stored in a frame or in registers.
@@ -33,6 +33,20 @@ class Frame:
     # Constant for the machine's word size.
     wordSize = 8
 
+    # This function is used by Translate to turn a Frame_access into an
+    # intermediate representation Tree expression. The Tree_exp argument is the
+    # address of the stack frame that the access lives in. If acc is a register
+    # access, such as InReg(t82), then the frame address argument will be
+    # discarded and the result will be simply Temp(t82).
+    @classmethod
+    def access_to_exp(access: Access, frame_pointer: IRT.Expression) -> IRT.Expression:
+        if isinstance(access, InFrame):
+            return IRT.BinaryOperation(
+                IRT.BinaryOperator.plus, frame_pointer, IRT.Constant(access.offset)
+            )
+        if isinstance(access, InRegister):
+            return IRT.Temporary(access.register)
+
     # Creates a new frame for function "name" with "formalEscapes" list of
     # booleans (list of parameters for function "name"). True means
     # escaped variable.
@@ -44,7 +58,8 @@ class Frame:
         # [Access] denoting the locations where the formal parameters will be
         # kept at run time, as seen from inside the callee.
         self.formalParameters = []
-        # The same but for local variables.
+        # [Access] denoting the locations where the local variables will be
+        # kept at run time, as seen from inside the callee.
         self.localVariables = []
         for escape in formal_escapes:
             self._alloc_single_var(escape, self.formalParameters)
@@ -75,13 +90,6 @@ class Frame:
 # It is %rpb if I'm not mistaken.
 # F_FP: Temp
 
-# This function is used by Translate to turn a Frame_access into an intermediate representation
-# Tree expression. The Tree_exp argument is the address of the stack frame that the access lives in.
-# If acc is a register access, such as InReg(t82), then the frame address argument will be discarded
-# and the result will be simply Temp(t82).
-def frame_exp(access: Access, frame_ptr: Expression) -> Expression:
-    pass
-
 
 # Sometimes we will need to call external functions that as written in C or assembly language
 # (such as a function that allocates memory for a Tiger array).
@@ -91,7 +99,9 @@ def frame_exp(access: Access, frame_ptr: Expression) -> Expression:
 # that creates the relevant function call. The simplest form for this function would be something
 # like return T_Call(T_Name(Temp_namedlabel(s)), args); , but it may have to be adapted for
 # static links, underscores in labels, and so on.
-def external_call(function_name: str, arguments: List[Expression]) -> Expression:
+def external_call(
+    function_name: str, arguments: List[IRT.Expression]
+) -> IRT.Expression:
     pass
 
 
@@ -102,7 +112,7 @@ def external_call(function_name: str, arguments: List[Expression]) -> Expression
 # This applies the view shift of calling a function, which is explained in Chapter 6.
 # Looks like this method is explained later, so we can use a dummy implementation
 # that just returns stm for now.
-def F_procEntryExit1(frame: Frame, statement: Statement) -> Statement:
+def F_procEntryExit1(frame: Frame, statement: IRT.Statement) -> IRT.Statement:
     return statement
 
 
@@ -118,5 +128,5 @@ class StringFragment(Fragment):
 
 @dataclass
 class ProcessFragment(Fragment):
-    body: Statement
+    body: IRT.Statement
     frame: Frame
