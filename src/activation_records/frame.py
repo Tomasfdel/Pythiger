@@ -52,9 +52,10 @@ class Frame:
     # escaped variable.
     def __init__(self, name: TempLabel, formal_escapes: [bool]):
         self.name = name
-        # The previous %rbp value is stored at %rbp.
+        # The previous %rbp value is stored at 0(%rbp).
         # Non-volatile registers are stored starting at -8(%rbp).
-        self.offset = -Frame.wordSize
+        # (subtraction is performed before allocation)
+        self.offset = 0
         # [Access] denoting the locations where the formal parameters will be
         # kept at run time, as seen from inside the callee.
         self.formalParameters = []
