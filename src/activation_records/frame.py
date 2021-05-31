@@ -24,6 +24,19 @@ class InRegister(Access):
     register: Temp
 
 
+# TODO: Ver que onda la asignacion de registros a temporales.
+# No entendemos por que Compiladori usa 32 bit registers.
+# No entendemos por que le asignamos temporales a registros.
+rbp = TempManager.new_temp()
+rax = TempManager.new_temp()
+
+# Frame pointer register FP.
+FP = rbp
+
+# Location of a function's return value (RV) as specified by the machine-specific frame structure.
+RV = rax
+
+
 # Frame is the class responsible for:
 # * the locations of all the formals.
 # * instructions required to implement the "view shift".
@@ -41,8 +54,10 @@ class Frame:
     @classmethod
     def access_to_exp(access: Access, frame_pointer: IRT.Expression) -> IRT.Expression:
         if isinstance(access, InFrame):
-            return IRT.Memory(IRT.BinaryOperation(
-                IRT.BinaryOperator.plus, frame_pointer, IRT.Constant(access.offset))
+            return IRT.Memory(
+                IRT.BinaryOperation(
+                    IRT.BinaryOperator.plus, frame_pointer, IRT.Constant(access.offset)
+                )
             )
         if isinstance(access, InRegister):
             return IRT.Temporary(access.register)
@@ -87,10 +102,6 @@ class Frame:
 
 # Extra definitions found on Chapter 7. Feel free to rename them as you consider.
 
-# Frame pointer register FP.
-# It is %rpb if I'm not mistaken.
-# F_FP: Temp
-
 
 # Sometimes we will need to call external functions that as written in C or assembly language
 # (such as a function that allocates memory for a Tiger array).
@@ -104,10 +115,6 @@ def external_call(
     function_name: str, arguments: List[IRT.Expression]
 ) -> IRT.Expression:
     pass
-
-
-# Location of a function's return value (RV) as specified by the machine-specific frame structure.
-# F_RV: Temp
 
 
 # This applies the view shift of calling a function, which is explained in Chapter 6.
