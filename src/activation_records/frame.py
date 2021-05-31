@@ -41,8 +41,8 @@ class Frame:
     @classmethod
     def access_to_exp(access: Access, frame_pointer: IRT.Expression) -> IRT.Expression:
         if isinstance(access, InFrame):
-            return IRT.BinaryOperation(
-                IRT.BinaryOperator.plus, frame_pointer, IRT.Constant(access.offset)
+            return IRT.Memory(IRT.BinaryOperation(
+                IRT.BinaryOperator.plus, frame_pointer, IRT.Constant(access.offset))
             )
         if isinstance(access, InRegister):
             return IRT.Temporary(access.register)
