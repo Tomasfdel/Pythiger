@@ -3,8 +3,8 @@ from typing import List
 from dataclasses import dataclass
 
 from abc import ABC
+from activation_records.temp import Temp, TempLabel, TempManager
 import intermediate_representation.tree as IRT
-from temp import Temp, TempLabel, TempManager
 
 
 # Access describes formals and locals stored in a frame or in registers.
@@ -125,19 +125,3 @@ def proc_entry_exit1(frame: Frame, statement: IRT.Statement) -> IRT.Statement:
 # page 261
 def proc_entry_exit3():
     pass
-
-
-class Fragment(ABC):
-    pass
-
-
-@dataclass
-class StringFragment(Fragment):
-    label: TempLabel
-    string: str
-
-
-@dataclass
-class ProcessFragment(Fragment):
-    body: IRT.Statement
-    frame: Frame
