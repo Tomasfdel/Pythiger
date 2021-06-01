@@ -211,15 +211,27 @@ def p_function_dec(p):
 
 def p_function_dec_no_type(p):
     "function_dec_no_type : FUNCTION ID LPAREN field_list RPAREN EQ expression"
+    parameters = p[4]
     p[0] = Node.FunctionDec(
-        position=p.lineno(1), name=p[2], params=p[4], returnType=None, body=p[7]
+        position=p.lineno(1),
+        name=p[2],
+        params=parameters,
+        param_escapes=[False for _ in parameters],
+        returnType=None,
+        body=p[7],
     )
 
 
 def p_function_dec_with_type(p):
     "function_dec_with_type : FUNCTION ID LPAREN field_list RPAREN COLON ID EQ expression"
+    parameters = p[4]
     p[0] = Node.FunctionDec(
-        position=p.lineno(1), name=p[2], params=p[4], returnType=p[7], body=p[9]
+        position=p.lineno(1),
+        name=p[2],
+        params=parameters,
+        param_escapes=[False for _ in parameters],
+        returnType=p[7],
+        body=p[9],
     )
 
 

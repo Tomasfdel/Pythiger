@@ -1,7 +1,7 @@
 from abc import ABC
 from enum import Enum
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 
 @dataclass
@@ -43,7 +43,7 @@ class Oper(Enum):
 
 @dataclass
 class DeclarationBlock(ASTNode):
-    declarationList: [Declaration]
+    declarationList: List[Declaration]
 
 
 @dataclass
@@ -54,7 +54,7 @@ class TypeDec(ASTNode):
 
 @dataclass
 class TypeDecBlock(Declaration):
-    typeDecList: [TypeDec]
+    typeDecList: List[TypeDec]
 
 
 @dataclass
@@ -70,7 +70,7 @@ class Field(ASTNode):
 
 @dataclass
 class RecordTy(Type):
-    fieldList: [Field]
+    fieldList: List[Field]
 
 
 @dataclass
@@ -83,19 +83,21 @@ class VariableDec(Declaration):
     name: str
     type: Optional[str]
     exp: Expression
+    escape: bool = False
 
 
 @dataclass
 class FunctionDec(ASTNode):
     name: str
-    params: [Field]
+    params: List[Field]
+    param_escapes: List[bool]
     returnType: Optional[str]
     body: Expression
 
 
 @dataclass
 class FunctionDecBlock(Declaration):
-    functionDecList: [FunctionDec]
+    functionDecList: List[FunctionDec]
 
 
 # EXPRESSION
@@ -124,7 +126,7 @@ class StringExp(Expression):
 @dataclass
 class CallExp(Expression):
     func: str
-    args: [Expression]
+    args: List[Expression]
 
 
 @dataclass
@@ -143,12 +145,12 @@ class ExpField(ASTNode):
 @dataclass
 class RecordExp(Expression):
     type: str
-    fields: [ExpField]
+    fields: List[ExpField]
 
 
 @dataclass
 class SeqExp(Expression):
-    seq: [Expression]
+    seq: List[Expression]
 
 
 @dataclass
@@ -181,6 +183,7 @@ class ForExp(Expression):
     lo: Expression
     hi: Expression
     body: Expression
+    escape: bool = False
 
 
 @dataclass
