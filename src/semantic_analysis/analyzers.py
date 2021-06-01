@@ -3,7 +3,13 @@ from typing import Set, Optional, Union, List
 from dataclasses import dataclass
 
 import parser.ast_nodes as ast
-from intermediate_representation.translated_expression import TranslatedExpression
+from activation_records.temp import TempLabel, TempManager
+from intermediate_representation.level import RealLevel
+import intermediate_representation.translate as IRT
+from intermediate_representation.translated_expression import (
+    TranslatedExpression,
+    no_op_expression,
+)
 from semantic_analysis.environment import EnvironmentEntry, VariableEntry, FunctionEntry
 from semantic_analysis.table import SymbolTable
 from semantic_analysis.types import (
@@ -79,7 +85,7 @@ def eliminate_name_types(type_definition: Type, type_env: SymbolTable[Type]):
         ]
 
 
-def check_name_unicity(
+def check_name_uniqueness(
     declaration_list: Union[List[ast.FunctionDec], List[ast.TypeDec]]
 ) -> bool:
     """Checks if all names in a function or type declaration block are unique."""
@@ -95,6 +101,7 @@ def check_name_unicity(
 def translate_variable(
     value_env: SymbolTable[EnvironmentEntry],
     type_env: SymbolTable[Type],
+    level: RealLevel,
     variable: ast.Variable,
 ) -> TypedExpression:
     if isinstance(variable, ast.SimpleVar):
@@ -102,19 +109,23 @@ def translate_variable(
         var_value = value_env.find(variable.sym)
         if var_value is None or not isinstance(var_value, VariableEntry):
             raise SemanticError(f"Undefined variable {variable.sym}", variable.position)
-        return TypedExpression(TranslatedExpression(), var_value.type)
+        return TypedExpression(
+            IRT.simple_variable(var_value.access, level), var_value.type
+        )
 
     if isinstance(variable, ast.FieldVar):
         # Record field: Look up the variable, check it's a record and that it has the given field.
-        trans_var = translate_variable(value_env, type_env, variable.var)
+        trans_var = translate_variable(value_env, type_env, level, variable.var)
         if not isinstance(trans_var.type, RecordType):
             raise SemanticError(
                 f"Trying to access the {variable.sym} field of a variable that is not a record",
                 variable.var.position,
             )
-        for field in trans_var.type.fields:
+        for index, field in enumerate(trans_var.type.fields):
             if field.name == variable.sym:
-                return TypedExpression(TranslatedExpression(), field.type)
+                return TypedExpression(
+                    IRT.field_variable(trans_var.expression, index), field.type
+                )
         raise SemanticError(
             f"Unknown record field name {variable.sym} for variable",
             variable.var.position,
@@ -123,42 +134,48 @@ def translate_variable(
     if isinstance(variable, ast.SubscriptVar):
         # Array subscript: Look up the variable, check it's a record and that the subscript
         # expression has integer type.
-        trans_var = translate_variable(value_env, type_env, variable.var)
+        trans_var = translate_variable(value_env, type_env, level, variable.var)
         if not isinstance(trans_var.type, ArrayType):
             raise SemanticError(
                 "Trying to access a subscript of a variable that is not an array",
                 variable.var.position,
             )
-        trans_exp = translate_expression(value_env, type_env, variable.exp)
+        trans_exp = translate_expression(value_env, type_env, level, variable.exp, None)
         if not isinstance(trans_exp.type, IntType):
             raise SemanticError(
                 "Array subscript must be an Integer", variable.exp.position
             )
-        return TypedExpression(TranslatedExpression(), trans_var.type.type)
+        return TypedExpression(
+            IRT.subscript_variable(trans_var.expression, trans_exp.expression),
+            trans_var.type.type,
+        )
 
     raise SemanticError("Unknown variable kind", variable.position)
 
 
+# TODO: Still missing determining variable escapes.
 def translate_expression(
     value_env: SymbolTable[EnvironmentEntry],
     type_env: SymbolTable[Type],
+    level: RealLevel,
     expression: ast.Expression,
+    break_label: Optional[TempLabel],
 ) -> TypedExpression:
     if isinstance(expression, ast.VarExp):
         # Variable name: Translate the variable and return that value.
-        return translate_variable(value_env, type_env, expression.var)
+        return translate_variable(value_env, type_env, level, expression.var)
 
     if isinstance(expression, ast.NilExp):
         # Nil constant: Return nil type.
-        return TypedExpression(TranslatedExpression(), NilType())
+        return TypedExpression(IRT.nil_expression(), NilType())
 
     if isinstance(expression, ast.IntExp):
         # Integer constant: Return integer type.
-        return TypedExpression(TranslatedExpression(), IntType())
+        return TypedExpression(IRT.integer_expression(expression.int), IntType())
 
     if isinstance(expression, ast.StringExp):
         # String constant: Return string type.
-        return TypedExpression(TranslatedExpression(), StringType())
+        return TypedExpression(IRT.string_expression(expression.string), StringType())
 
     if isinstance(expression, ast.CallExp):
         # Function call: Look up the function name, check the types of the parameters and return
@@ -179,24 +196,35 @@ def translate_expression(
                 + f" {len(func_value.formals)} expected, but {len(expression.args)} given",
                 expression.position,
             )
+        translated_arguments = []
         for arg_position in range(len(expression.args)):
             trans_exp = translate_expression(
-                value_env, type_env, expression.args[arg_position]
+                value_env, type_env, level, expression.args[arg_position], break_label
             )
+            translated_arguments.append(trans_exp.expression)
             if not are_types_equal(func_value.formals[arg_position], trans_exp.type):
                 raise SemanticError(
                     f"Wrong type for argument in position {arg_position}"
                     + f" in call to {expression.func}",
                     expression.position,
                 )
-        return TypedExpression(TranslatedExpression(), func_value.result)
+        return TypedExpression(
+            IRT.call_expression(
+                func_value.label, func_value.level, level, translated_arguments
+            ),
+            func_value.result,
+        )
 
     if isinstance(expression, ast.OpExp):
         # Operation: If an arithmetic operation, check if both values are Integers.
         # If an in/equality comparison, check if both values have the same type.
         # If an order comparison, check if both values are either Integers or Strings.
-        left = translate_expression(value_env, type_env, expression.left)
-        right = translate_expression(value_env, type_env, expression.right)
+        left = translate_expression(
+            value_env, type_env, level, expression.left, break_label
+        )
+        right = translate_expression(
+            value_env, type_env, level, expression.right, break_label
+        )
         if expression.oper in (
             ast.Oper.plus,
             ast.Oper.minus,
@@ -213,6 +241,9 @@ def translate_expression(
                     "Right arithmetic operand must be an Integer",
                     expression.right.position,
                 )
+            intermediate_expression = IRT.arithmetic_operation_expression(
+                expression.oper, left.expression, right.expression
+            )
         elif expression.oper in (
             ast.Oper.eq,
             ast.Oper.neq,
@@ -239,9 +270,17 @@ def translate_expression(
                     "Values must be Integers or Strings to compare their order",
                     expression.position,
                 )
+            if are_types_equal(left.type, StringType()):
+                intermediate_expression = IRT.string_conditional_operation_expression(
+                    expression.oper, left.expression, right.expression
+                )
+            else:
+                intermediate_expression = IRT.conditional_operation_expression(
+                    expression.oper, left.expression, right.expression
+                )
         else:
             raise SemanticError("Unknown operator", expression.position)
-        return TypedExpression(TranslatedExpression(), IntType())
+        return TypedExpression(intermediate_expression, IntType())
 
     if isinstance(expression, ast.RecordExp):
         # Record creation: Check the type is a record type, that only and all its defined fields
@@ -257,7 +296,7 @@ def translate_expression(
                 f"Trying to create a record of type {expression.type}, which is not a record type",
                 expression.position,
             )
-        checked_fields = set()
+        checked_fields = {}
         for exp_field in expression.fields:
             if exp_field.name in checked_fields:
                 raise SemanticError(
@@ -270,14 +309,16 @@ def translate_expression(
                 if type_field.name == exp_field.name:
                     found_field = True
                     expected_field_type = type_field.type
-                    checked_fields.add(exp_field.name)
                     break
             if not found_field:
                 raise SemanticError(
                     f"Unknown field {exp_field.name} in record creation",
                     exp_field.position,
                 )
-            trans_exp = translate_expression(value_env, type_env, exp_field.exp)
+            trans_exp = translate_expression(
+                value_env, type_env, level, exp_field.exp, break_label
+            )
+            checked_fields[exp_field.name] = trans_exp.expression
             if not are_types_equal(expected_field_type, trans_exp.type):
                 raise SemanticError(
                     f"Assigning value of a wrong type to field {exp_field.name} in record creation",
@@ -288,14 +329,37 @@ def translate_expression(
                 "Missing field assignment in record creation",
                 expression.position,
             )
-        return TypedExpression(TranslatedExpression(), trans_typ)
+
+        ordered_field_expressions = [
+            checked_fields[field.name] for field in trans_typ.fields
+        ]
+        return TypedExpression(
+            IRT.record_expression(ordered_field_expressions), trans_typ
+        )
 
     if isinstance(expression, ast.SeqExp):
         # Sequence of expressions: Evaluate each of them and return the type of the last one.
-        trans_exp = TypedExpression(TranslatedExpression(), VoidType())
+        if len(expression.seq) == 0:
+            return translate_expression(
+                value_env,
+                type_env,
+                level,
+                ast.EmptyExp(expression.position),
+                break_label,
+            )
+
+        translated_expressions = []
+        last_expression_type = VoidType()
         for seq_expression in expression.seq:
-            trans_exp = translate_expression(value_env, type_env, seq_expression)
-        return trans_exp
+            trans_exp = translate_expression(
+                value_env, type_env, level, seq_expression, break_label
+            )
+            translated_expressions.append(trans_exp.expression)
+            last_expression_type = trans_exp.type
+
+        return TypedExpression(
+            IRT.sequence_expression(translated_expressions), last_expression_type
+        )
 
     if isinstance(expression, ast.AssignExp):
         # Assignment: Look up the l-value, make sure it's not a loop variable and that the
@@ -312,26 +376,35 @@ def translate_expression(
                     f"For loop variable {expression.var.sym} is not assignable",
                     expression.var.position,
                 )
-        trans_var = translate_variable(value_env, type_env, expression.var)
-        trans_exp = translate_expression(value_env, type_env, expression.exp)
+        trans_var = translate_variable(value_env, type_env, level, expression.var)
+        trans_exp = translate_expression(
+            value_env, type_env, level, expression.exp, break_label
+        )
         if not are_types_equal(trans_var.type, trans_exp.type):
             raise SemanticError(
                 "Trying to assign a value to a variable of a different type",
                 expression.position,
             )
-        return TypedExpression(TranslatedExpression(), VoidType())
+        return TypedExpression(
+            IRT.assignment_expression(trans_var.expression, trans_exp.expression),
+            VoidType(),
+        )
 
     if isinstance(expression, ast.IfExp):
         # If: Check the conditional expression returns an Integer type.
         # If it only has a then branch, then check it produces no value and return no value.
         # If it also has an else branch. make sure both produce the same type and return it.
-        trans_test = translate_expression(value_env, type_env, expression.test)
+        trans_test = translate_expression(
+            value_env, type_env, level, expression.test, break_label
+        )
         if not isinstance(trans_test.type, IntType):
             raise SemanticError(
                 "The condition of an If expression must be an Integer",
                 expression.test.position,
             )
-        trans_then = translate_expression(value_env, type_env, expression.thenDo)
+        trans_then = translate_expression(
+            value_env, type_env, level, expression.thenDo, break_label
+        )
         if expression.elseDo is None:
             if not isinstance(trans_then.type, VoidType):
                 raise SemanticError(
@@ -339,8 +412,13 @@ def translate_expression(
                     + " when there is no Else branch",
                     expression.thenDo.position,
                 )
-            return TypedExpression(TranslatedExpression(), VoidType())
-        trans_else = translate_expression(value_env, type_env, expression.elseDo)
+            return TypedExpression(
+                IRT.if_expression(trans_test.expression, trans_then.expression, None),
+                VoidType(),
+            )
+        trans_else = translate_expression(
+            value_env, type_env, level, expression.elseDo, break_label
+        )
         if not are_types_equal(trans_then.type, trans_else.type):
             raise SemanticError(
                 "Then and Else branches of an If expression must return values of the same type",
@@ -352,11 +430,18 @@ def translate_expression(
             returned_type = trans_else.type
         else:
             returned_type = trans_then.type
-        return TypedExpression(TranslatedExpression(), returned_type)
+        return TypedExpression(
+            IRT.if_expression(
+                trans_test.expression, trans_then.expression, trans_else.expression
+            ),
+            returned_type,
+        )
 
     if isinstance(expression, ast.WhileExp):
         # While: Check that the condition is an Integer and that the body produces no value.
-        trans_test = translate_expression(value_env, type_env, expression.test)
+        trans_test = translate_expression(
+            value_env, type_env, level, expression.test, break_label
+        )
         if not isinstance(trans_test.type, IntType):
             raise SemanticError(
                 "The condition of a While expression must be an Integer",
@@ -364,14 +449,23 @@ def translate_expression(
             )
         value_env.begin_scope(True)
         type_env.begin_scope(True)
-        trans_body = translate_expression(value_env, type_env, expression.body)
+        new_break_label = TempManager.new_label()
+        trans_body = translate_expression(
+            value_env, type_env, level, expression.body, new_break_label
+        )
         if not isinstance(trans_body.type, VoidType):
             raise SemanticError(
                 "While body must produce no value", expression.body.position
             )
         value_env.end_scope()
         type_env.end_scope()
-        return TypedExpression(TranslatedExpression(), VoidType())
+
+        return TypedExpression(
+            IRT.while_expression(
+                trans_test.expression, trans_body.expression, new_break_label
+            ),
+            VoidType(),
+        )
 
     if isinstance(expression, ast.BreakExp):
         # Break: Make sure that the closest scope start is a While or a For loop.
@@ -380,18 +474,22 @@ def translate_expression(
                 "Break expression must be inside a For or While loop",
                 expression.position,
             )
-        return TypedExpression(TranslatedExpression(), VoidType())
+        return TypedExpression(IRT.break_expression(break_label), VoidType())
 
     if isinstance(expression, ast.ForExp):
         # For: Check that ends of the for variable iteration are Integers. Then add a non editable
         # Integer variable to the value env and evaluate the body, making sure it produces no value.
-        trans_lo = translate_expression(value_env, type_env, expression.lo)
+        trans_lo = translate_expression(
+            value_env, type_env, level, expression.lo, break_label
+        )
         if not isinstance(trans_lo.type, IntType):
             raise SemanticError(
                 "Starting value for loop variable in a For expression must be an Integer",
                 expression.lo.position,
             )
-        trans_hi = translate_expression(value_env, type_env, expression.hi)
+        trans_hi = translate_expression(
+            value_env, type_env, level, expression.hi, break_label
+        )
         if not isinstance(trans_hi.type, IntType):
             raise SemanticError(
                 "Ending value for loop variable in a For expression must be an Integer",
@@ -399,27 +497,51 @@ def translate_expression(
             )
         value_env.begin_scope(True)
         type_env.begin_scope(True)
-        value_env.add(expression.var, VariableEntry(IntType(), False))
-        trans_body = translate_expression(value_env, type_env, expression.body)
+        loop_variable_access = level.alloc_local(True)
+        value_env.add(
+            expression.var, VariableEntry(loop_variable_access, IntType(), False)
+        )
+        trans_body = translate_expression(
+            value_env, type_env, level, expression.body, break_label
+        )
         if not isinstance(trans_body.type, VoidType):
             raise SemanticError(
                 "For body must produce no value", expression.body.position
             )
         value_env.end_scope()
         type_env.end_scope()
-        return TypedExpression(TranslatedExpression(), VoidType())
+        return TypedExpression(
+            IRT.for_expression(
+                IRT.simple_variable(loop_variable_access, level),
+                trans_lo.expression,
+                trans_hi.expression,
+                trans_body.expression,
+                break_label,
+            ),
+            VoidType(),
+        )
 
     if isinstance(expression, ast.LetExp):
         # Let: Go through all declarations and then evaluate the body of the expression. The return
         # type is the one of the last expression in the body (or Void if there are none)
         value_env.begin_scope()
         type_env.begin_scope()
+        translated_declarations = []
         for declaration in expression.decs.declarationList:
-            translate_declaration(value_env, type_env, declaration)
-        trans_exp = translate_expression(value_env, type_env, expression.body)
+            translated_declarations.append(
+                translate_declaration(
+                    value_env, type_env, declaration, level, break_label
+                )
+            )
+        trans_exp = translate_expression(
+            value_env, type_env, level, expression.body, break_label
+        )
         value_env.end_scope()
         type_env.end_scope()
-        return trans_exp
+        return TypedExpression(
+            IRT.let_expression(translated_declarations, trans_exp.expression),
+            trans_exp.type,
+        )
 
     if isinstance(expression, ast.ArrayExp):
         # Array creation: Check that the declared type is an array type, that the size is an Integer
@@ -435,21 +557,29 @@ def translate_expression(
                 f"Trying to create an array of type {expression.type}, which is not an array type",
                 expression.position,
             )
-        trans_size = translate_expression(value_env, type_env, expression.size)
+        trans_size = translate_expression(
+            value_env, type_env, level, expression.size, break_label
+        )
         if not isinstance(trans_size.type, IntType):
             raise SemanticError(
                 "Array size must be an Integer", expression.size.position
             )
-        trans_init = translate_expression(value_env, type_env, expression.init)
+        trans_init = translate_expression(
+            value_env, type_env, level, expression.init, break_label
+        )
         if not are_types_equal(trans_typ.type, trans_init.type):
             raise SemanticError(
                 "Array initial value must be of its declared type",
                 expression.init.position,
             )
-        return TypedExpression(TranslatedExpression(), trans_typ)
+
+        return TypedExpression(
+            IRT.array_expression(trans_size.expression, trans_init.expression),
+            trans_typ,
+        )
 
     if isinstance(expression, ast.EmptyExp):
-        return TypedExpression(TranslatedExpression(), VoidType())
+        return TypedExpression(IRT.empty_expression(), VoidType())
 
     raise SemanticError("Unknown expression kind", expression.position)
 
@@ -458,13 +588,15 @@ def translate_declaration(
     value_env: SymbolTable[EnvironmentEntry],
     type_env: SymbolTable[Type],
     declaration: ast.Declaration,
-):
+    level: RealLevel,
+    break_label: Optional[TempLabel],
+) -> TranslatedExpression:
     if isinstance(declaration, ast.FunctionDecBlock):
         # Function declaration block: Check that all function names are unique. Then, evaluate each
         # function header and add it to the value environment. Then, for each function, push its
         # parameters to the value environment and make sure the function body returns the same type
         # as the declared one.
-        if not check_name_unicity(declaration.functionDecList):
+        if not check_name_uniqueness(declaration.functionDecList):
             raise SemanticError(
                 "All names in the function declaration block must be unique",
                 declaration.position,
@@ -491,7 +623,12 @@ def translate_declaration(
                         + f" for function {function_dec.name}",
                         function_dec.position,
                     )
-            function_entry = FunctionEntry(formals, return_type)
+            function_label = TempManager.new_label()
+            formal_escapes = [True for _ in formals]
+            function_level = RealLevel(level, function_label, formal_escapes)
+            function_entry = FunctionEntry(
+                function_level, function_label, formals, return_type
+            )
             function_entries.append(function_entry)
             value_env.add(function_dec.name, function_entry)
         for function_dec, function_entry in zip(
@@ -499,25 +636,37 @@ def translate_declaration(
         ):
             value_env.begin_scope()
             for param, formal_type in zip(function_dec.params, function_entry.formals):
-                value_env.add(param.name, VariableEntry(formal_type))
-            trans_exp = translate_expression(value_env, type_env, function_dec.body)
+                formal_access = function_entry.level.alloc_local(True)
+                value_env.add(param.name, VariableEntry(formal_access, formal_type))
+            trans_exp = translate_expression(
+                value_env,
+                type_env,
+                function_entry.level,
+                function_dec.body,
+                break_label,
+            )
             if not are_types_equal(trans_exp.type, function_entry.result):
                 raise SemanticError(
                     f"Function {function_dec.name} returns a value of a type"
                     + " different than its declared type",
                     function_dec.position,
                 )
+            IRT.proc_entry_exit(function_entry.level, trans_exp.expression)
             value_env.end_scope()
+        return no_op_expression()
 
     elif isinstance(declaration, ast.VariableDec):
         # Variable declaration: Translate the expression, make sure its type matches the declared
         # type and that a variable initialized to nil has a type declaration of a record type.
-        trans_exp = translate_expression(value_env, type_env, declaration.exp)
+        trans_exp = translate_expression(
+            value_env, type_env, level, declaration.exp, break_label
+        )
         if isinstance(trans_exp.type, NilType) and declaration.type is None:
             raise SemanticError(
                 f"Must declare the type of variable {declaration.name} when initializing it to nil",
                 declaration.position,
             )
+        variable_type = trans_exp.type
         if declaration.type is not None:
             declared_type = type_env.find(declaration.type)
             if declared_type is None:
@@ -539,8 +688,13 @@ def translate_declaration(
                     + f" declared type {declaration.type}",
                     declaration.position,
                 )
-            value_env.add(declaration.name, VariableEntry(declared_type))
-        value_env.add(declaration.name, VariableEntry(trans_exp.type))
+            variable_type = declared_type
+
+        variable_access = level.alloc_local(True)
+        value_env.add(declaration.name, VariableEntry(variable_access, variable_type))
+        return IRT.assignment_expression(
+            IRT.simple_variable(variable_access, level), trans_exp.expression
+        )
 
     elif isinstance(declaration, ast.TypeDecBlock):
         # Type declaration block: Check that all type names are unique. Then, follow these steps:
@@ -559,7 +713,7 @@ def translate_declaration(
         # with a pointer to the right type.
         # This implementation is not optimized at all, but It Just Works(TM) and we found it easier
         # to follow than the one in the book.
-        if not check_name_unicity(declaration.typeDecList):
+        if not check_name_uniqueness(declaration.typeDecList):
             raise SemanticError(
                 "All names in the type declaration block must be unique",
                 declaration.position,
@@ -577,6 +731,7 @@ def translate_declaration(
         for type_dec in declaration.typeDecList:
             type_definition = type_env.find(type_dec.name)
             eliminate_name_types(type_definition, type_env)
+        return no_op_expression()
 
     else:
         raise SemanticError("Unknown declaration kind", declaration.position)

@@ -100,3 +100,7 @@ def convert_to_condition(exp: TranslatedExpression) -> tree.Condition:
 
     if isinstance(exp, Conditional):
         return exp.condition
+
+
+def no_op_expression() -> TranslatedExpression:
+    return Expression(Constant(0))

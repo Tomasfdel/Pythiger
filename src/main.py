@@ -1,3 +1,4 @@
+from intermediate_representation.level import base_program_level
 from semantic_analysis.analyzers import translate_expression, SemanticError
 from semantic_analysis.environment import base_type_environment, base_value_environment
 from lexer import lex as le
@@ -23,10 +24,14 @@ def main():
         print(err)
         return
 
-    # Semantic Analysis
+    # Semantic Analysis and Intermediate Representation Translation
     try:
         analysed_program = translate_expression(
-            base_value_environment(), base_type_environment(), parsed_program
+            base_value_environment(),
+            base_type_environment(),
+            base_program_level(),
+            parsed_program,
+            None,
         )
     except SemanticError as err:
         print(err)
