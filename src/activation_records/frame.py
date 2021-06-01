@@ -49,7 +49,7 @@ class Frame:
     # Creates a new frame for function "name" with "formalEscapes" list of
     # booleans (list of parameters for function "name"). True means
     # escaped variable.
-    def __init__(self, name: TempLabel, formal_escapes: [bool]):
+    def __init__(self, name: TempLabel, formal_escapes: List[bool]):
         self.name = name
         # The previous %rbp value is stored at 0(%rbp).
         # Non-volatile registers are stored starting at -8(%rbp).

@@ -153,7 +153,6 @@ def translate_variable(
     raise SemanticError("Unknown variable kind", variable.position)
 
 
-# TODO: Still missing determining variable escapes.
 def translate_expression(
     value_env: SymbolTable[EnvironmentEntry],
     type_env: SymbolTable[Type],
@@ -497,7 +496,7 @@ def translate_expression(
             )
         value_env.begin_scope(True)
         type_env.begin_scope(True)
-        loop_variable_access = level.alloc_local(True)
+        loop_variable_access = level.alloc_local(expression.escape)
         value_env.add(
             expression.var, VariableEntry(loop_variable_access, IntType(), False)
         )
@@ -624,8 +623,9 @@ def translate_declaration(
                         function_dec.position,
                     )
             function_label = TempManager.new_label()
-            formal_escapes = [True for _ in formals]
-            function_level = RealLevel(level, function_label, formal_escapes)
+            function_level = RealLevel(
+                level, function_label, function_dec.param_escapes
+            )
             function_entry = FunctionEntry(
                 function_level, function_label, formals, return_type
             )
@@ -635,8 +635,11 @@ def translate_declaration(
             declaration.functionDecList, function_entries
         ):
             value_env.begin_scope()
-            for param, formal_type in zip(function_dec.params, function_entry.formals):
-                formal_access = function_entry.level.alloc_local(True)
+            # We ignore the static link since we need the accesses of the REAL function formals.
+            formal_accesses = function_entry.level.formals()[1:]
+            for param, formal_type, formal_access in zip(
+                function_dec.params, function_entry.formals, formal_accesses
+            ):
                 value_env.add(param.name, VariableEntry(formal_access, formal_type))
             trans_exp = translate_expression(
                 value_env,
@@ -690,7 +693,7 @@ def translate_declaration(
                 )
             variable_type = declared_type
 
-        variable_access = level.alloc_local(True)
+        variable_access = level.alloc_local(declaration.escape)
         value_env.add(declaration.name, VariableEntry(variable_access, variable_type))
         return IRT.assignment_expression(
             IRT.simple_variable(variable_access, level), trans_exp.expression

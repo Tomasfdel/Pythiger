@@ -1,4 +1,5 @@
 from abc import ABC
+from typing import List
 
 from dataclasses import dataclass
 
@@ -17,12 +18,12 @@ class Access:
 
 
 class RealLevel(Level):
-    def __init__(self, parent: Level, name: TempLabel, formals: [bool]):
+    def __init__(self, parent: Level, name: TempLabel, formals: List[bool]):
         self.parent = parent
         self.name = name
         self.frame = frame.Frame(name, [True] + formals)
 
-    def formals(self) -> [Access]:
+    def formals(self) -> List[Access]:
         """Returns the access of all formals, including the static link."""
 
         return [
