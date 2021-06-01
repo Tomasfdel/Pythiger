@@ -1,5 +1,6 @@
 import unittest
 import semantic_analysis.types as sem
+from intermediate_representation.escape import find_escape
 from intermediate_representation.level import base_program_level
 from semantic_analysis.analyzers import translate_expression, SemanticError
 from semantic_analysis.environment import base_type_environment, base_value_environment
@@ -24,6 +25,7 @@ def type_check(fileName: str):
 
     # Semantic Analysis and Intermediate Representation Translation
     try:
+        find_escape(parsed_program)
         analysed_program = translate_expression(
             base_value_environment(),
             base_type_environment(),
