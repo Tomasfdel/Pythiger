@@ -84,9 +84,6 @@ class Frame:
     # Number of allocated locals so far.
 
 
-# Extra definitions found on Chapter 7. Feel free to rename them as you consider.
-
-
 # This function is used by Translate to turn a Frame_access into an intermediate representation
 # Tree expression. The Tree_exp argument is the address of the stack frame that the access lives in.
 # If acc is a register access, such as InReg(t82), then the frame address argument will be discarded
@@ -109,10 +106,11 @@ def access_to_exp(access: Access, frame_pointer: IRT.Expression) -> IRT.Expressi
 # that creates the relevant function call. The simplest form for this function would be something
 # like return T_Call(T_Name(Temp_namedlabel(s)), args); , but it may have to be adapted for
 # static links, underscores in labels, and so on.
+# TODO: See what shape this expression should have once we move to define the runtime functions.
 def external_call(
     function_name: str, arguments: List[IRT.Expression]
 ) -> IRT.Expression:
-    pass
+    return IRT.Call(IRT.Name(TempManager.named_label(function_name)), arguments)
 
 
 # This applies the view shift of calling a function, which is explained in Chapter 6.
