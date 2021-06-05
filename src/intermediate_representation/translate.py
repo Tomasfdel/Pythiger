@@ -104,7 +104,7 @@ def call_expression(
     function_label: TempLabel,
     function_level: RealLevel,
     caller_level: RealLevel,
-    argument_list: [TranslatedExpression],
+    argument_list: List[TranslatedExpression],
 ) -> TranslatedExpression:
     argument_expressions = [
         convert_to_expression(argument) for argument in argument_list
@@ -158,7 +158,7 @@ def string_conditional_operation_expression(
     return Conditional(Condition(jump_expression, [jump_expression], [jump_expression]))
 
 
-def record_expression(field_list: [TranslatedExpression]) -> TranslatedExpression:
+def record_expression(field_list: List[TranslatedExpression]) -> TranslatedExpression:
     result = TempManager.new_temp()
     creation_sequence = [
         Move(
@@ -178,7 +178,7 @@ def record_expression(field_list: [TranslatedExpression]) -> TranslatedExpressio
                     Constant(index * frame.Frame.wordSize),
                 )
             ),
-            field_expression,
+            convert_to_expression(field_expression),
         )
         creation_sequence.append(field_allocation)
 

@@ -55,7 +55,7 @@ def base_value_environment() -> SymbolTable[EnvironmentEntry]:
     return environment
 
 
-def base_function_entry(formal_types: [Type], return_type: Type) -> FunctionEntry:
+def base_function_entry(formal_types: List[Type], return_type: Type) -> FunctionEntry:
     function_label = TempManager.new_label()
     function_level = RealLevel(
         outermost_level, function_label, [False for _ in formal_types]

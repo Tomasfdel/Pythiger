@@ -1,6 +1,6 @@
 from abc import ABC
 from enum import Enum, auto
-from typing import Optional
+from typing import Optional, List
 
 from dataclasses import dataclass
 
@@ -43,7 +43,7 @@ class Expression(ABC):
 
 @dataclass
 class Sequence(Statement):
-    sequence: [Statement]
+    sequence: List[Statement]
 
 
 @dataclass
@@ -54,7 +54,7 @@ class Label(Statement):
 @dataclass
 class Jump(Statement):
     expression: Expression
-    labels: [TempLabel]
+    labels: List[TempLabel]
 
 
 @dataclass
@@ -113,11 +113,11 @@ class Constant(Expression):
 @dataclass
 class Call(Expression):
     function: Expression
-    arguments: [Expression]
+    arguments: List[Expression]
 
 
 @dataclass
 class Condition:
     statement: Statement
-    trues: [ConditionalJump]
-    falses: [ConditionalJump]
+    trues: List[ConditionalJump]
+    falses: List[ConditionalJump]

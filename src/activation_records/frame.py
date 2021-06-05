@@ -71,7 +71,7 @@ class Frame:
 
     # Allocates a single variable or parameter in the frame and adds it
     # to accessList.
-    def _alloc_single_var(self, escape: bool, accessList: [Access]) -> Access:
+    def _alloc_single_var(self, escape: bool, accessList: List[Access]) -> Access:
         if escape:
             self.offset -= Frame.wordSize
             accessList.append(InFrame(self.offset))

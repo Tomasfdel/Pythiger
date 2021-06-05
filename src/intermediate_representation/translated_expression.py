@@ -1,4 +1,5 @@
 from abc import ABC
+from typing import List
 
 from dataclasses import dataclass
 
@@ -18,12 +19,12 @@ from intermediate_representation.tree import (
 )
 
 
-def patch_true_labels(condition_list: [ConditionalJump], label: TempLabel):
+def patch_true_labels(condition_list: List[ConditionalJump], label: TempLabel):
     for condition in condition_list:
         condition.true = label
 
 
-def patch_false_labels(condition_list: [ConditionalJump], label: TempLabel):
+def patch_false_labels(condition_list: List[ConditionalJump], label: TempLabel):
     for condition in condition_list:
         condition.false = label
 
