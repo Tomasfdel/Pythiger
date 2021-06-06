@@ -105,19 +105,22 @@ def check_name_uniqueness(
     return True
 
 
-def translate_program(expression: ast.Expression) -> TypedExpression:
+def translate_program(program: ast.Expression) -> TypedExpression:
     try:
-        find_escape(expression)
+        find_escape(program)
     except EscapeError as err:
         raise SemanticError(err.message, err.position)
 
-    return translate_expression(
+    program_level = base_program_level()
+    translated_program = translate_expression(
         base_value_environment(),
         base_type_environment(),
-        base_program_level(),
-        expression,
+        program_level,
+        program,
         None,
     )
+    IRT.proc_entry_exit(program_level, translated_program.expression)
+    return translated_program
 
 
 def translate_variable(
