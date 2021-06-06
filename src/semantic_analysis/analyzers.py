@@ -4,13 +4,20 @@ from dataclasses import dataclass
 
 import parser.ast_nodes as ast
 from activation_records.temp import TempLabel, TempManager
-from intermediate_representation.level import RealLevel
+from intermediate_representation.escape import find_escape, EscapeError
+from intermediate_representation.level import RealLevel, base_program_level
 import intermediate_representation.translate as IRT
 from intermediate_representation.translated_expression import (
     TranslatedExpression,
     no_op_expression,
 )
-from semantic_analysis.environment import EnvironmentEntry, VariableEntry, FunctionEntry
+from semantic_analysis.environment import (
+    EnvironmentEntry,
+    VariableEntry,
+    FunctionEntry,
+    base_value_environment,
+    base_type_environment,
+)
 from semantic_analysis.table import SymbolTable
 from semantic_analysis.types import (
     Type,
@@ -96,6 +103,21 @@ def check_name_uniqueness(
             return False
         seen_names.add(declaration.name)
     return True
+
+
+def translate_program(expression: ast.Expression) -> TypedExpression:
+    try:
+        find_escape(expression)
+    except EscapeError as err:
+        raise SemanticError(err.message, err.position)
+
+    return translate_expression(
+        base_value_environment(),
+        base_type_environment(),
+        base_program_level(),
+        expression,
+        None,
+    )
 
 
 def translate_variable(

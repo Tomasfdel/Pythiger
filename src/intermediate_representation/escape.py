@@ -3,7 +3,6 @@ from typing import Union
 from dataclasses import dataclass
 
 import parser.ast_nodes as ast
-from semantic_analysis.analyzers import SemanticError
 from semantic_analysis.table import SymbolTable
 
 
@@ -16,6 +15,12 @@ class ParameterEscape:
 class EscapeEntry:
     depth: int
     variable: Union[ast.ForExp, ast.VariableDec, ParameterEscape]
+
+
+class EscapeError(Exception):
+    def __init__(self, message: str, position: int):
+        self.message = message
+        self.position = position
 
 
 def find_escape(expression: ast.Expression):
@@ -83,7 +88,9 @@ def traverse_expression(
         traverse_expression(escape_env, depth, expression.init)
 
     else:
-        raise SemanticError("Unknown expression kind", expression.position)
+        raise EscapeError(
+            "Unknown expression kind for escape finding", expression.position
+        )
 
 
 def traverse_declaration(
@@ -112,7 +119,9 @@ def traverse_declaration(
             escape_env.end_scope()
 
     else:
-        raise SemanticError("Unknown declaration kind", declaration.position)
+        raise EscapeError(
+            "Unknown declaration kind for escape finding", declaration.position
+        )
 
 
 def traverse_variable(
@@ -131,4 +140,4 @@ def traverse_variable(
         traverse_expression(escape_env, depth, variable.exp)
 
     else:
-        raise SemanticError("Unknown variable kind", variable.position)
+        raise EscapeError("Unknown variable kind for escape finding", variable.position)
