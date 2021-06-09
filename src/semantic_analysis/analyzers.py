@@ -521,12 +521,13 @@ def translate_expression(
             )
         value_env.begin_scope(True)
         type_env.begin_scope(True)
+        new_break_label = TempManager.new_label()
         loop_variable_access = level.alloc_local(expression.escape)
         value_env.add(
             expression.var, VariableEntry(loop_variable_access, IntType(), False)
         )
         trans_body = translate_expression(
-            value_env, type_env, level, expression.body, break_label
+            value_env, type_env, level, expression.body, new_break_label
         )
         if not isinstance(trans_body.type, VoidType):
             raise SemanticError(
@@ -540,7 +541,7 @@ def translate_expression(
                 trans_lo.expression,
                 trans_hi.expression,
                 trans_body.expression,
-                break_label,
+                new_break_label,
             ),
             VoidType(),
         )
