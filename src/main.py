@@ -1,3 +1,4 @@
+from canonical.canonize import canonize_process_fragments
 from semantic_analysis.analyzers import SemanticError, translate_program
 from lexer import lex as le
 from parser import parser as p
@@ -31,8 +32,11 @@ def main():
         print(err)
         return
 
+    process_bodies = canonize_process_fragments()
+
     print("All good!")
     print(analysed_program.type)
+    print("Process fragment amount:", len(process_bodies))
 
 
 if __name__ == "__main__":
