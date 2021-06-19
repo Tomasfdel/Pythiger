@@ -1,6 +1,8 @@
 import intermediate_representation.tree as IRT
 import assembly as Assembly
 import activation_records.temp as Temp
+import activation_records.frame as Frame
+from typing import List
 
 # TODO: Placeholder, not needed.
 from activation_records.temp import temp_to_str
@@ -40,42 +42,49 @@ comparison_operator_to_jump = {
     IRT.RelationalOperator.ugt: "ja",
     IRT.RelationalOperator.uge: "jae",
 }
-# TODO: There are two operators for multiplication and division, one for
-# signed values and another for unsigned ones. Which one should we use, if not both?
+# There are two operators for multiplication and division, one for
+# signed values and another for unsigned ones.
 # Currently using signed version of mul and div.
 binary_operator_to_use = {
-    IRT.BinaryOperator.plus: "add",
-    IRT.BinaryOperator.minus: "sub",
-    IRT.BinaryOperator.mul: "imul",
-    IRT.BinaryOperator.div: "idiv",
-    IRT.BinaryOperator.andOp: "and",
-    IRT.BinaryOperator.orOp: "or",
-    IRT.BinaryOperator.lshift: "sal",
-    IRT.BinaryOperator.rshift: "sar",
-    IRT.BinaryOperator.arshift: "shr",
-    IRT.BinaryOperator.xor: "xor",
+    IRT.BinaryOperator.plus: "addq",
+    IRT.BinaryOperator.minus: "subq",
+    IRT.BinaryOperator.mul: "imulq",
+    IRT.BinaryOperator.div: "idivq",
+    IRT.BinaryOperator.andOp: "andq",
+    IRT.BinaryOperator.orOp: "orq",
+    IRT.BinaryOperator.lshift: "salq",
+    IRT.BinaryOperator.rshift: "sarq",
+    IRT.BinaryOperator.arshift: "shrq",
+    IRT.BinaryOperator.xor: "xorq",
 }
 
 
 def munchStm(stmNode: IRT.Statement) -> None:
+    # Label(label): The constant value of name 'label', defined to be the current
+    # machine code address.
     if isinstance(stmNode, IRT.Label):
-        # TODO: Verify if line is correct.
         emit(Assembly.Label(line=f"{stmNode.label}:", label=stmNode.label))
 
     # TODO: Why does IRT.Jump.expression exist?
-    if isinstance(stmNode, IRT.Jump):
+    # Jump (addr, labels): Transfer control to address 'addr'. The destination may
+    # be a literal label, or it may be an address calculated by any other kind of expression.
+    # The list of labels 'labels' specifies all possible locations that 'addr' may jump to.
+    elif isinstance(stmNode, IRT.Jump):
         emit(
             Assembly.Operation(
                 line="jmp 'j0", source=[], destination=[], jump=stmNode.labels
             )
         )
-
-    if isinstance(stmNode, IRT.ConditionalJump):
+    # ConditionalJump(operator, exp_left, exp_right, true_label, false_label):
+    # evaluate 'exp_left' and 'exp_right' in that order, yielding values 'a' and 'b'.
+    # Then compare both values using 'operator'. If the result is TRUE, jump to 'true_label';
+    # otherwise jump to 'false_label'.
+    elif isinstance(stmNode, IRT.ConditionalJump):
         # The jump itself checks the flags in the EFL register.
         # These are usually set with TEST or CMP.
         emit(
             Assembly.Operation(
-                line="cmp %'s0, %'s1",
+                line="cmpq %'s0, %'s1",
                 source=[munchExp(stmNode.left), munchExp(stmNode.right)],
                 destination=[],
                 jump=[],
@@ -86,15 +95,16 @@ def munchStm(stmNode: IRT.Statement) -> None:
                 line=f"{comparison_operator_to_jump[stmNode.operator]} 'j0",
                 source=[],
                 destination=[],
-                # TODO: Why is the false label here as well?
                 jump=[stmNode.true, stmNode.false],
             )
         )
-
-    if isinstance(stmNode, IRT.Move):
+    # Move(temporary, expression): we consider two different cases, based on the
+    # content of 'temporary'.
+    elif isinstance(stmNode, IRT.Move):
         # Warning: the IRT is built using the syntax as (move dst, src).
         # Here we swap the order of the expressions to match the AT&T syntax (move src, dst)
-        # Move(Temp t, e)
+
+        # Move(Temporary t, exp): evaluates 'exp' and moves it to temporary 't'.
         if isinstance(stmNode.temporary, IRT.Temporary):
             emit(
                 Assembly.Move(
@@ -105,8 +115,9 @@ def munchStm(stmNode: IRT.Statement) -> None:
             )
         elif isinstance(stmNode.temporary, IRT.Memory):
             # TODO: Triple check that this Assembly operation is actually a Move
-            # Move(mem(e1), e2): evaluate e1, yielding address addr.
-            # Then evaluate e2 and store the result in memory starting at addr
+            # Move(mem(e1), e2): evaluates 'e1', yielding address 'addr'.
+            # Then evaluate 'e2' and store the result into 'WordSize' bytes of memory
+            # starting at 'addr'.
             emit(
                 Assembly.Move(
                     line="movq %'s0, (%'s1)",
@@ -118,18 +129,36 @@ def munchStm(stmNode: IRT.Statement) -> None:
                 )
             )
         else:
-            # TODO: Throw exception error "No match for node IRT.Move"
-            pass
-
-    if isinstance(stmNode, IRT.StatementExpression):
+            raise Exception("Munching an invalid version of node IRT.Move")
+    # StatementExpression(exp): Evaluates 'exp' and discard the result.
+    elif isinstance(stmNode, IRT.StatementExpression):
         munchExp(stmNode.expression)
-
+    # We do not consider the cases for Sequence nodes here, given the modifications
+    # done in chapter 8
+    elif isinstance(stmNode, IRT.Sequence):
+        raise Exception("Found a IRT.Sequence node while munching")
     else:
-        # TODO: Throw exception error "No match for the IRT node in statement"
-        pass
+        raise Exception("No match for IRT node while munching a statement")
+
+
+def munchArgs(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
+    temp_list = []
+    for exp in arg_list:
+        temp = munchExp(exp)
+        temp_list += temp
+        emit(
+            Assembly.Operation(
+                line="pushq %'s0", source=[temp], destination=[], jump=[]
+            )
+        )
+
+    return temp_list
 
 
 def munchExp(expNode: IRT.Expression) -> Temp.Temp:
+    # BinaryOperation(operator, exp_left, exp_right): Apply the bynary operator
+    # 'operator' to operands 'exp_left' and 'exp_right'. 'exp_left' is evaluated
+    # before 'exp_right'.
     if isinstance(expNode, IRT.BinaryOperation):
         if isinstance(
             expNode.operator, (IRT.BinaryOperator.plus, IRT.BinaryOperator.minus)
@@ -138,7 +167,7 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             temp = Temp.TempManager.new_temp()
             emit(
                 Assembly.Move(
-                    line="mov %'s0, %'d0",
+                    line="movq %'s0, %'d0",  # mov src temp
                     source=[munchExp(expNode.left)],
                     destination=[temp],
                 )
@@ -155,9 +184,48 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
         elif isinstance(
             expNode.operator, (IRT.BinaryOperator.mul, IRT.BinaryOperator.div)
         ):
-            # imul/idiv src, dst
-            # TODO: complete this case
-            pass
+            # imul S :  RDX:RAX <--- S * RAX
+            # S has the left operand
+            # RAX has the right operand
+            # RDX:RAX has the result
+
+            # idiv S :  RDX <--- RDX:RAX mod S
+            #           RAX <--- RDX:RAX / S
+            # S has the divisor
+            # RDX:RAX has the dividend
+            # RAX has the quotient
+            # RDX has the remaining
+
+            temp = Temp.TempManager.new_temp()
+            frame = Frame.Frame(...)
+            rax = frame.register_to_temp["rax"]
+            rdx = frame.register_to_temp["rdx"]
+
+            emit(
+                Assembly.Move(
+                    line="movq %'s0, %d0'",
+                    source=[munchExp(expNode.left)],
+                    destination=[rax],
+                )
+            )
+            emit(
+                Assembly.Operation(
+                    line="cqto", source=[rax], destination=[rdx], jump=[]
+                )
+            )
+            emit(
+                Assembly.Operation(
+                    line=f"{binary_operator_to_use[expNode.operator]} %'s2",
+                    source=[rax, rdx, munchExp(expNode.right)],
+                    destination=[rax, rdx],
+                    jump=[],
+                )
+            )
+            emit(
+                Assembly.Move(line="movq %'s0, %'d0", source=[rax], destination=[temp])
+            )
+            return temp
+
         elif isinstance(
             expNode.operator,
             (IRT.BinaryOperator.andOp, IRT.BinaryOperator.orOp, IRT.BinaryOperator.xor),
@@ -167,7 +235,7 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             temp = Temp.TempManager.new_temp()
             emit(
                 Assembly.Move(
-                    line="mov %'s0, %'d0",
+                    line="movq %'s0, %'d0",
                     source=[munchExp(expNode.left)],
                     destination=[temp],
                 )
@@ -201,24 +269,24 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             )
             return dst_temp
         else:
-            # TODO: Throw exception error "Not a valid operator"
-            pass
-
-    # Mem(e): contenido en WordSize Bytes que está en la dirección 'e'
+            raise Exception(
+                "Munching a node IRT.BinaryOperator with an invalid operator"
+            )
+    # Memory(addr): The contents of 'WordSize' bytes of memory, starting at address addr.
     elif isinstance(expNode, IRT.Memory):
         temp = Temp.TempManager.new_temp()
         emit(
             Assembly.Move(
-                line="mov (%'s0), %'d0",
+                line="movq (%'s0), %'d0",
                 source=[munchExp(expNode.expression)],
                 destination=[temp],
             )
         )
         return temp
-
+    # Temporary(temp): he temporary 'temp'.
     elif isinstance(expNode, IRT.Temporary):
         return expNode.temporary
-
+    # Name(n): Symbolic constant 'n' corresponding to an assembly lenguage label
     elif isinstance(expNode, IRT.Name):
         temp = Temp.TempManager.new_temp()
         emit(
@@ -230,7 +298,7 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             )
         )
         return temp
-
+    # Constant(const): The integer constant 'const'.
     elif isinstance(expNode, IRT.Constant):
         temp = Temp.TempManager.new_temp()
         emit(
@@ -241,25 +309,26 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             )
         )
         return temp
-
+    # Call(function, args): A procedure call: the application of function 'function'
+    # to argument list 'args'. The subexpression 'function' is evaluated before the
+    # arguments, which are evaluated left to right.
     elif isinstance(expNode, IRT.Call):
         # Lo que deberíamos hacer:
         # pushear caller saved arguments
         # hacer el call (line="call expNode.function")
         # popear caller saved arguments
-        # function = munchExp(expNode.function)
-        # arguments = [munchExp(argument) for argument in expNode.arguments]
-        # emit("CALL")
-        # munchExp(expNode.function)
-        # for argument in expNode.arguments:
-        #     munchExp(argument)
-        pass
 
-    # TODO: Ask tomasu what this is.
-    elif isinstance(expNode, IRT.Condition):
-        # emit("CONDITION")
-        # munchStm(statement)
+        # rax = ...
+        # rsp = ...
+        # pushear caller saved arguments
+        # emit(Assembly.Operation(line="call 's0",
+        #                         source=[munchExp(stmNode.function)]++munchArgs(stmNode.arguments),
+        #                         destination=[],
+        #                         jump=[]))
         pass
+    # We do not consider the cases for EvaluateSequence nodes here, given the modifications
+    # done in chapter 8
+    elif isinstance(expNode, IRT.EvaluateSequence):
+        raise Exception("Found a IRT.EvaluateSequence node while munching")
     else:
-        # Throw exception error "No match for the IRT node in expression"
-        pass
+        raise Exception("No match for IRT node while munching an expression")
