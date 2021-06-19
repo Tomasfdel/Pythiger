@@ -402,21 +402,21 @@ def translate_expression(
                 expression.test.position,
             )
         trans_then = translate_expression(
-            value_env, type_env, level, expression.thenDo, break_label
+            value_env, type_env, level, expression.then_do, break_label
         )
-        if expression.elseDo is None:
+        if expression.else_do is None:
             if not isinstance(trans_then.type, VoidType):
                 raise SemanticError(
                     "Then branch of an If expression must produce no value"
                     + " when there is no Else branch",
-                    expression.thenDo.position,
+                    expression.then_do.position,
                 )
             return TypedExpression(
                 IRT.if_expression(trans_test.expression, trans_then.expression, None),
                 VoidType(),
             )
         trans_else = translate_expression(
-            value_env, type_env, level, expression.elseDo, break_label
+            value_env, type_env, level, expression.else_do, break_label
         )
         if not are_types_equal(trans_then.type, trans_else.type):
             raise SemanticError(
@@ -526,7 +526,7 @@ def translate_expression(
         value_env.begin_scope()
         type_env.begin_scope()
         translated_declarations = []
-        for declaration in expression.decs.declarationList:
+        for declaration in expression.decs.declaration_list:
             translated_declarations.append(
                 translate_declaration(
                     value_env, type_env, declaration, level, break_label
@@ -595,13 +595,13 @@ def translate_declaration(
         # function header and add it to the value environment. Then, for each function, push its
         # parameters to the value environment and make sure the function body returns the same type
         # as the declared one.
-        if not check_name_uniqueness(declaration.functionDecList):
+        if not check_name_uniqueness(declaration.function_dec_list):
             raise SemanticError(
                 "All names in the function declaration block must be unique",
                 declaration.position,
             )
         function_entries = []
-        for function_dec in declaration.functionDecList:
+        for function_dec in declaration.function_dec_list:
             formals = []
             for parameter in function_dec.params:
                 param_type = type_env.find(parameter.type)
@@ -612,13 +612,13 @@ def translate_declaration(
                         parameter.position,
                     )
                 formals.append(param_type)
-            if function_dec.returnType is None:
+            if function_dec.return_type is None:
                 return_type = VoidType()
             else:
-                return_type = type_env.find(function_dec.returnType)
+                return_type = type_env.find(function_dec.return_type)
                 if return_type is None:
                     raise SemanticError(
-                        f"Undefined return type {function_dec.returnType}"
+                        f"Undefined return type {function_dec.return_type}"
                         + f" for function {function_dec.name}",
                         function_dec.position,
                     )
@@ -632,7 +632,7 @@ def translate_declaration(
             function_entries.append(function_entry)
             value_env.add(function_dec.name, function_entry)
         for function_dec, function_entry in zip(
-            declaration.functionDecList, function_entries
+            declaration.function_dec_list, function_entries
         ):
             value_env.begin_scope()
             # We ignore the static link since we need the accesses of the REAL function formals.
@@ -716,22 +716,22 @@ def translate_declaration(
         # with a pointer to the right type.
         # This implementation is not optimized at all, but It Just Works(TM) and we found it easier
         # to follow than the one in the book.
-        if not check_name_uniqueness(declaration.typeDecList):
+        if not check_name_uniqueness(declaration.type_dec_list):
             raise SemanticError(
                 "All names in the type declaration block must be unique",
                 declaration.position,
             )
-        for type_dec in declaration.typeDecList:
+        for type_dec in declaration.type_dec_list:
             type_env.add(type_dec.name, NameType(type_dec.name))
-        for type_dec in declaration.typeDecList:
+        for type_dec in declaration.type_dec_list:
             type_env.add(type_dec.name, translate_type(type_env, type_dec.type))
-        for type_dec in declaration.typeDecList:
+        for type_dec in declaration.type_dec_list:
             if simplify_type_aliases(type_dec.name, type_env, set()) is None:
                 raise SemanticError(
                     f"Cyclic type definition found involving type {type_dec.name}",
                     type_dec.position,
                 )
-        for type_dec in declaration.typeDecList:
+        for type_dec in declaration.type_dec_list:
             type_definition = type_env.find(type_dec.name)
             eliminate_name_types(type_definition, type_env)
         return no_op_expression()
@@ -751,7 +751,7 @@ def translate_type(type_env: SymbolTable[Type], ty: ast.Type) -> Type:
     if isinstance(ty, ast.RecordTy):
         # Record type: Look up every field type while building the field list.
         field_list = []
-        for field in ty.fieldList:
+        for field in ty.field_list:
             type_value = type_env.find(field.type)
             if type_value is None:
                 raise SemanticError(
