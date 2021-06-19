@@ -44,13 +44,13 @@ def p_declaration_block(p):
 
 def p_empty_declaration_block(p):
     "empty_declaration_block : empty_list"
-    p[0] = Node.DeclarationBlock(position=p.lexer.lineno - 1, declaration_list=p[1])
+    p[0] = Node.DeclarationBlock(position=p.lexer.lineno - 1, declarationList=p[1])
 
 
 def p_ne_declaration_block(p):
     "ne_declaration_block : declaration_list"
     p[0] = Node.DeclarationBlock(
-        position=p.slice[1].value[0].position, declaration_list=p[1]
+        position=p.slice[1].value[0].position, declarationList=p[1]
     )
 
 
@@ -87,7 +87,7 @@ def p_type_dec_block(p):
     """
     type_dec_block : type_dec_list
     """
-    p[0] = Node.TypeDecBlock(position=p.slice[1].value[0].position, type_dec_list=p[1])
+    p[0] = Node.TypeDecBlock(position=p.slice[1].value[0].position, typeDecList=p[1])
 
 
 def p_type_dec(p):
@@ -133,7 +133,7 @@ def p_record_ty(p):
     """
     record_ty : LBRACE field_list RBRACE
     """
-    p[0] = Node.RecordTy(position=p.lineno(1), field_list=p[2])
+    p[0] = Node.RecordTy(position=p.lineno(1), fieldList=p[2])
 
 
 def p_array_ty(p):
@@ -197,7 +197,7 @@ def p_function_dec_block(p):
     function_dec_block : function_dec_list
     """
     p[0] = Node.FunctionDecBlock(
-        position=p.slice[1].value[0].position, function_dec_list=p[1]
+        position=p.slice[1].value[0].position, functionDecList=p[1]
     )
 
 
@@ -217,7 +217,7 @@ def p_function_dec_no_type(p):
         name=p[2],
         params=parameters,
         param_escapes=[False for _ in parameters],
-        return_type=None,
+        returnType=None,
         body=p[7],
     )
 
@@ -230,7 +230,7 @@ def p_function_dec_with_type(p):
         name=p[2],
         params=parameters,
         param_escapes=[False for _ in parameters],
-        return_type=p[7],
+        returnType=p[7],
         body=p[9],
     )
 
@@ -426,8 +426,8 @@ def p_binary_and_exp(p):
     p[0] = Node.IfExp(
         position=p.lineno(2),
         test=p[1],
-        then_do=p[3],
-        else_do=Node.IntExp(position=p.lineno(2), int=0),
+        thenDo=p[3],
+        elseDo=Node.IntExp(position=p.lineno(2), int=0),
     )
 
 
@@ -436,8 +436,8 @@ def p_binary_or_exp(p):
     p[0] = Node.IfExp(
         position=p.lineno(2),
         test=p[1],
-        then_do=Node.IntExp(position=p.lineno(2), int=1),
-        else_do=p[3],
+        thenDo=Node.IntExp(position=p.lineno(2), int=1),
+        elseDo=p[3],
     )
 
 
@@ -512,12 +512,12 @@ def p_assign_exp(p):
 
 def p_if_then_exp(p):
     "if_then_exp : IF expression THEN expression"
-    p[0] = Node.IfExp(position=p.lineno(1), test=p[2], then_do=p[4], else_do=None)
+    p[0] = Node.IfExp(position=p.lineno(1), test=p[2], thenDo=p[4], elseDo=None)
 
 
 def p_if_then_else_exp(p):
     "if_then_else_exp : IF expression THEN expression ELSE expression"
-    p[0] = Node.IfExp(position=p.lineno(1), test=p[2], then_do=p[4], else_do=p[6])
+    p[0] = Node.IfExp(position=p.lineno(1), test=p[2], thenDo=p[4], elseDo=p[6])
 
 
 def p_while_exp(p):

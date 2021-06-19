@@ -5,18 +5,18 @@ TempLabel = str
 
 
 class TempManager(ABC):
-    temp_count = 0
-    label_count = 0
+    tempCount = 0
+    labelCount = 0
 
     @classmethod
     def new_temp(cls) -> Temp:
-        cls.temp_count += 1
-        return cls.temp_count
+        cls.tempCount += 1
+        return cls.tempCount
 
     @classmethod
     def new_label(cls) -> TempLabel:
-        cls.label_count += 1
-        return f"lab_{cls.label_count}"
+        cls.labelCount += 1
+        return f"lab_{cls.labelCount}"
 
     # TODO: Esto es necesario?
     # Si es necesario, que pasa cuando ya existe la label?

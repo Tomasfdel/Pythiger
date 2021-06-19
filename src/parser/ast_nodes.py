@@ -43,7 +43,7 @@ class Oper(Enum):
 
 @dataclass
 class DeclarationBlock(ASTNode):
-    declaration_list: List[Declaration]
+    declarationList: List[Declaration]
 
 
 @dataclass
@@ -54,7 +54,7 @@ class TypeDec(ASTNode):
 
 @dataclass
 class TypeDecBlock(Declaration):
-    type_dec_list: List[TypeDec]
+    typeDecList: List[TypeDec]
 
 
 @dataclass
@@ -70,7 +70,7 @@ class Field(ASTNode):
 
 @dataclass
 class RecordTy(Type):
-    field_list: List[Field]
+    fieldList: List[Field]
 
 
 @dataclass
@@ -91,13 +91,13 @@ class FunctionDec(ASTNode):
     name: str
     params: List[Field]
     param_escapes: List[bool]
-    return_type: Optional[str]
+    returnType: Optional[str]
     body: Expression
 
 
 @dataclass
 class FunctionDecBlock(Declaration):
-    function_dec_list: List[FunctionDec]
+    functionDecList: List[FunctionDec]
 
 
 # EXPRESSION
@@ -162,8 +162,8 @@ class AssignExp(Expression):
 @dataclass
 class IfExp(Expression):
     test: Expression
-    then_do: Expression
-    else_do: Optional[Expression]
+    thenDo: Expression
+    elseDo: Optional[Expression]
 
 
 @dataclass

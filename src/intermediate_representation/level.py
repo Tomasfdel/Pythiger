@@ -27,7 +27,7 @@ class RealLevel(Level):
         """Returns the access of all formals, including the static link."""
 
         return [
-            Access(self, frame_access) for frame_access in self.frame.formal_parameters
+            Access(self, frame_access) for frame_access in self.frame.formalParameters
         ]
 
     def alloc_local(self, escape: bool) -> Access:

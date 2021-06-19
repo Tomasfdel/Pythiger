@@ -44,7 +44,7 @@ RV = rax
 # * the label at which the function's machine code is to begin.
 class Frame:
     # Constant for the machine's word size.
-    word_size = 8
+    wordSize = 8
 
     # Creates a new frame for function "name" with "formalEscapes" list of
     # booleans (list of parameters for function "name"). True means
@@ -57,27 +57,27 @@ class Frame:
         self.offset = 0
         # [Access] denoting the locations where the formal parameters will be
         # kept at run time, as seen from inside the callee.
-        self.formal_parameters = []
+        self.formalParameters = []
         # [Access] denoting the locations where the local variables will be
         # kept at run time, as seen from inside the callee.
-        self.local_variables = []
+        self.localVariables = []
         for escape in formal_escapes:
-            self._alloc_single_var(escape, self.formal_parameters)
+            self._alloc_single_var(escape, self.formalParameters)
 
     # Allocates a new local variable in the frame. The "escape"
     # variable indicates whether the variable escapes or not.
     def alloc_local(self, escape: bool) -> Access:
-        return self._alloc_single_var(escape, self.local_variables)
+        return self._alloc_single_var(escape, self.localVariables)
 
     # Allocates a single variable or parameter in the frame and adds it
-    # to access_list.
-    def _alloc_single_var(self, escape: bool, access_list: List[Access]) -> Access:
+    # to accessList.
+    def _alloc_single_var(self, escape: bool, accessList: List[Access]) -> Access:
         if escape:
-            self.offset -= Frame.word_size
-            access_list.append(InFrame(self.offset))
+            self.offset -= Frame.wordSize
+            accessList.append(InFrame(self.offset))
         else:
-            access_list.append(InRegister(TempManager.new_temp()))
-        return access_list[-1]
+            accessList.append(InRegister(TempManager.new_temp()))
+        return accessList[-1]
 
     # Instructions required for "view shift".
 
