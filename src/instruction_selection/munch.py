@@ -24,6 +24,7 @@ def emit(instruction: Assembly.Instruction) -> None:
 # D(%R): source read from Mem[%R+D] where D is the displacement and R is a register
 
 # TODO: Add exceptions.
+# TODO: change assembly operations to match 64 bit use
 
 
 # TODO: Ask tomasu if a dictionary here is fine.
@@ -54,8 +55,6 @@ binary_operator_to_use = {
     IRT.BinaryOperator.arshift: "shr",
     IRT.BinaryOperator.xor: "xor",
 }
-
-# TODO: Esto no devuelve None, pero por ahora no tenemos el arbol de assembly.
 
 
 def munchStm(stmNode: IRT.Statement) -> None:
@@ -99,26 +98,29 @@ def munchStm(stmNode: IRT.Statement) -> None:
         if isinstance(stmNode.temporary, IRT.Temporary):
             emit(
                 Assembly.Move(
-                    line="mov %'s0, %'d0",
+                    line="movq %'s0, %'d0",
                     source=[munchExp(stmNode.expression)],
                     destination=[munchExp(stmNode.temporary)],
                 )
             )
         elif isinstance(stmNode.temporary, IRT.Memory):
-            # TODO: Why Operation and not Move? Is it stmNode.temporary or stmNode.temporary.expression?
-            # Move(mem(e1), e2): evaluate e1, yielding address addr. Then evaluate e2 and store the result in memory starting at addr
+            # TODO: Triple check that this Assembly operation is actually a Move
+            # Move(mem(e1), e2): evaluate e1, yielding address addr.
+            # Then evaluate e2 and store the result in memory starting at addr
             emit(
-                Assembly.Operation(
-                    line="move %'s0, (%'s1)",
-                    source=[munchExp(stmNode.expression), munchExp(stmNode.temporary)],
+                Assembly.Move(
+                    line="movq %'s0, (%'s1)",
+                    source=[
+                        munchExp(stmNode.expression),
+                        munchExp(stmNode.temporary.expression),
+                    ],
                     destination=[],
-                    jump=[],
                 )
             )
         else:
             # TODO: Throw exception error "No match for node IRT.Move"
             pass
-    # # TODO: Ask tomasu what this node is.
+
     if isinstance(stmNode, IRT.StatementExpression):
         munchExp(stmNode.expression)
 
@@ -127,7 +129,6 @@ def munchStm(stmNode: IRT.Statement) -> None:
         pass
 
 
-# TODO: Esto no devuelve None, pero por ahora no tenemos el arbol de assembly. Debería devolver un Temp
 def munchExp(expNode: IRT.Expression) -> Temp.Temp:
     if isinstance(expNode, IRT.BinaryOperation):
         if isinstance(
@@ -162,7 +163,7 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             (IRT.BinaryOperator.andOp, IRT.BinaryOperator.orOp, IRT.BinaryOperator.xor),
         ):
             # and/or/xor src, dst
-            # TODO: Can we add these cases to the ones we have above? Should we left them separated?
+            # TODO: add to previous case as to not repeat code.
             temp = Temp.TempManager.new_temp()
             emit(
                 Assembly.Move(
@@ -189,41 +190,28 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             ),
         ):
             # sal/sar/shr count, dst
-            # TODO: Should we check this or is unnecesary?
-            if isinstance(expNode.left, IRT.Constant):
-                temp = Temp.TempManager.new_temp()
-                emit(
-                    Assembly.Move(
-                        line="mov %'s0, %'d0",
-                        source=[munchExp(expNode.right)],
-                        destination=[temp],
-                    )
+            dst_temp = munchExp(expNode.right)
+            emit(
+                Assembly.Operation(
+                    line=f"{binary_operator_to_use[expNode.operator]} %'s0, %'d0",
+                    source=[munchExp(expNode.left), dst_temp],
+                    destination=[dst_temp],
+                    jump=[],
                 )
-                # TODO: is this correct?
-                emit(
-                    Assembly.Operation(
-                        line=f"{binary_operator_to_use[expNode.operator]} %'s0, %'d0",
-                        source=[munchExp(expNode.left), temp],
-                        destination=[temp],
-                        jump=[],
-                    )
-                )
-                return temp
-            else:
-                # TODO: Throw exception error "Source of sal/sar/shr operation is not count value"
-                pass
+            )
+            return dst_temp
         else:
             # TODO: Throw exception error "Not a valid operator"
             pass
 
+    # Mem(e): contenido en WordSize Bytes que está en la dirección 'e'
     elif isinstance(expNode, IRT.Memory):
         temp = Temp.TempManager.new_temp()
         emit(
-            Assembly.Operation(
+            Assembly.Move(
                 line="mov (%'s0), %'d0",
                 source=[munchExp(expNode.expression)],
                 destination=[temp],
-                jump=[],
             )
         )
         return temp
@@ -233,16 +221,9 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
 
     elif isinstance(expNode, IRT.Name):
         temp = Temp.TempManager.new_temp()
-        # TODO: Is this line valid? Is it correct?
-        # emit(Assembly.Operation(line=f"lea {expNode.Label}, %'d0", source=[], destination=[temp], jump=[]))
-        return temp
-
-    elif isinstance(expNode, IRT.Constant):
-        temp = Temp.TempManager.new_temp()
-        # TODO: Double check this.
         emit(
             Assembly.Operation(
-                line=f"mov ${expNode.value}, %'d0",
+                line=f"leaq {expNode.Label}(%rip), %'d0",
                 source=[],
                 destination=[temp],
                 jump=[],
@@ -250,18 +231,35 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
         )
         return temp
 
-    # elif isinstance(expNode, IRT.Call):
-    #     # function = munchExp(expNode.function)
-    #     # arguments = [munchExp(argument) for argument in expNode.arguments]
-    #     emit("CALL")
-    #     munchExp(expNode.function)
-    #     for argument in expNode.arguments:
-    #         munchExp(argument)
-    #
-    # # TODO: Ask tomasu what this is.
-    # elif isinstance(expNode, IRT.Condition):
-    #     emit("CONDITION")
-    #     munchStm(statement)
-    # else:
-    #     # Throw exception error "No match for the IRT node in expression"
-    #     pass
+    elif isinstance(expNode, IRT.Constant):
+        temp = Temp.TempManager.new_temp()
+        emit(
+            Assembly.Move(
+                line=f"movq ${expNode.value}, %'d0",
+                source=[],
+                destination=[temp],
+            )
+        )
+        return temp
+
+    elif isinstance(expNode, IRT.Call):
+        # Lo que deberíamos hacer:
+        # pushear caller saved arguments
+        # hacer el call (line="call expNode.function")
+        # popear caller saved arguments
+        # function = munchExp(expNode.function)
+        # arguments = [munchExp(argument) for argument in expNode.arguments]
+        # emit("CALL")
+        # munchExp(expNode.function)
+        # for argument in expNode.arguments:
+        #     munchExp(argument)
+        pass
+
+    # TODO: Ask tomasu what this is.
+    elif isinstance(expNode, IRT.Condition):
+        # emit("CONDITION")
+        # munchStm(statement)
+        pass
+    else:
+        # Throw exception error "No match for the IRT node in expression"
+        pass
