@@ -60,9 +60,9 @@ def traverse_expression(
 
     elif isinstance(expression, ast.IfExp):
         traverse_expression(escape_env, depth, expression.test)
-        traverse_expression(escape_env, depth, expression.thenDo)
-        if expression.elseDo is not None:
-            traverse_expression(escape_env, depth, expression.elseDo)
+        traverse_expression(escape_env, depth, expression.then_do)
+        if expression.else_do is not None:
+            traverse_expression(escape_env, depth, expression.else_do)
 
     elif isinstance(expression, ast.WhileExp):
         traverse_expression(escape_env, depth, expression.test)
@@ -78,7 +78,7 @@ def traverse_expression(
 
     elif isinstance(expression, ast.LetExp):
         escape_env.begin_scope()
-        for declaration in expression.decs.declarationList:
+        for declaration in expression.decs.declaration_list:
             traverse_declaration(escape_env, depth, declaration)
         traverse_expression(escape_env, depth, expression.body)
         escape_env.end_scope()
@@ -104,7 +104,7 @@ def traverse_declaration(
         escape_env.add(declaration.name, EscapeEntry(depth, declaration))
 
     elif isinstance(declaration, ast.FunctionDecBlock):
-        for function_declaration in declaration.functionDecList:
+        for function_declaration in declaration.function_dec_list:
             escape_env.begin_scope()
             for parameter in function_declaration.params:
                 escape_env.add(

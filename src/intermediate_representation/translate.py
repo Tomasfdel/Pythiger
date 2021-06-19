@@ -61,7 +61,7 @@ def field_variable(
                 BinaryOperation(
                     BinaryOperator.mul,
                     Constant(field_index),
-                    Constant(frame.Frame.wordSize),
+                    Constant(frame.Frame.word_size),
                 ),
             )
         )
@@ -79,7 +79,7 @@ def subscript_variable(
                 BinaryOperation(
                     BinaryOperator.mul,
                     convert_to_expression(subscript),
-                    Constant(frame.Frame.wordSize),
+                    Constant(frame.Frame.word_size),
                 ),
             )
         )
@@ -164,7 +164,7 @@ def record_expression(field_list: List[TranslatedExpression]) -> TranslatedExpre
         Move(
             Temporary(result),
             frame.external_call(
-                "initRecord", [Constant(len(field_list) * frame.Frame.wordSize)]
+                "initRecord", [Constant(len(field_list) * frame.Frame.word_size)]
             ),
         )
     ]
@@ -175,7 +175,7 @@ def record_expression(field_list: List[TranslatedExpression]) -> TranslatedExpre
                 BinaryOperation(
                     BinaryOperator.plus,
                     Temporary(result),
-                    Constant(index * frame.Frame.wordSize),
+                    Constant(index * frame.Frame.word_size),
                 )
             ),
             convert_to_expression(field_expression),
