@@ -6,6 +6,65 @@ from abc import ABC
 from activation_records.temp import Temp, TempLabel, TempManager
 import intermediate_representation.tree as IRT
 
+# Constant for the machine's word size.
+word_size = 8
+
+# The register lists should not overlap according to Appel, but some are
+# ambiguous (like rbp, which is "special" but also callee-saved).
+# The assignment to each list has been done in accordance to:
+# https://web.stanford.edu/class/archive/cs/cs107/cs107.1216/resources/x86-64-reference.pdf
+
+# A list of registers used to implement "special" registers.
+special_registers = ["rip", "rsp", "rax"]
+
+# A list of registers in which to pass outgoing arguments
+# (including the static link).
+argument_registers = ["rdi", "rsi", "rdx", "rcx", "r8", "r9"]
+
+# A list of registers that the called procedure (callee) must preserve
+# unchanged (or save and restore).
+callee_saved_registers = ["rbx", "rbp", "r12", "r13", "r14", "r15"]
+
+# A list of registers that the callee may trash.
+caller_saved_registers = ["r10", "r11"]
+
+all_registers = (
+    special_registers
+    + argument_registers
+    + callee_saved_registers
+    + caller_saved_registers
+)
+
+
+# Bidirectional mapping between registers and temporaries using the Singleton pattern.
+class TempMap(object):
+    _instance = None
+    # Dictionary mapping registers to temporaries.
+    register_to_temp = {}
+    # Dictionary mapping temporaries to registers.
+    temp_to_register = {}
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(TempMap, cls).__new__(cls)
+
+            for register in all_registers:
+                temp = TempManager.new_temp()
+                cls.register_to_temp[register] = temp
+                cls.temp_to_register[temp] = register
+
+        return cls._instance
+
+
+# Temporal corresponding to the frame pointer register rbp.
+def frame_pointer(self) -> Temp:
+    return TempMap().register_to_temp["rbp"]
+
+
+# Temporal corresponding to the return value register rax.
+def return_value(self) -> Temp:
+    return TempMap().register_to_temp["rax"]
+
 
 # Access describes formals and locals stored in a frame or in registers.
 class Access(ABC):
@@ -24,28 +83,12 @@ class InRegister(Access):
     register: Temp
 
 
-# TODO: Ver que onda la asignacion de registros a temporales.
-# No entendemos por que Compiladori usa 32 bit registers.
-# No entendemos por que le asignamos temporales a registros.
-rbp = TempManager.new_temp()
-rax = TempManager.new_temp()
-
-# Frame pointer register FP.
-FP = rbp
-
-# Location of a function's return value (RV) as specified by the machine-specific frame structure.
-RV = rax
-
-
 # Frame is the class responsible for:
 # * the locations of all the formals.
 # * instructions required to implement the "view shift".
 # * the number of locals allocated so far.
 # * the label at which the function's machine code is to begin.
 class Frame:
-    # Constant for the machine's word size.
-    word_size = 8
-
     # Creates a new frame for function "name" with "formalEscapes" list of
     # booleans (list of parameters for function "name"). True means
     # escaped variable.
@@ -55,6 +98,7 @@ class Frame:
         # Non-volatile registers are stored starting at -8(%rbp).
         # (subtraction is performed before allocation)
         self.offset = 0
+
         # [Access] denoting the locations where the formal parameters will be
         # kept at run time, as seen from inside the callee.
         self.formal_parameters = []
@@ -84,9 +128,10 @@ class Frame:
     # Number of allocated locals so far.
 
 
-# This function is used by Translate to turn a Frame_access into an intermediate representation
-# Tree expression. The Tree_exp argument is the address of the stack frame that the access lives in.
-# If acc is a register access, such as InReg(t82), then the frame address argument will be discarded
+# This function is used by Translate to turn a Frame.Access into an IRT.Expression.
+# The frame_pointer argument is the address of the stack frame that the access lives in.
+# If access is a register access, such as InReg(t82), then the frame_pointer argument
+# will be discarded.
 def access_to_exp(access: Access, frame_pointer: IRT.Expression) -> IRT.Expression:
     if isinstance(access, InFrame):
         return IRT.Memory(
