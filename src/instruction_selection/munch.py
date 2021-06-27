@@ -56,7 +56,7 @@ binary_operator_to_use = {
 }
 
 
-def munchStm(stmNode: IRT.Statement) -> None:
+def munch_statement(stmNode: IRT.Statement) -> None:
     # Label(label): The constant value of name 'label', defined to be the current
     # machine code address.
     if isinstance(stmNode, IRT.Label):
@@ -82,7 +82,10 @@ def munchStm(stmNode: IRT.Statement) -> None:
         emit(
             Assembly.Operation(
                 line="cmpq %'s0, %'s1",
-                source=[munchExp(stmNode.left), munchExp(stmNode.right)],
+                source=[
+                    munch_expression(stmNode.left),
+                    munch_expression(stmNode.right),
+                ],
                 destination=[],
                 jump=[],
             )
@@ -106,12 +109,11 @@ def munchStm(stmNode: IRT.Statement) -> None:
             emit(
                 Assembly.Move(
                     line="movq %'s0, %'d0",
-                    source=[munchExp(stmNode.expression)],
-                    destination=[munchExp(stmNode.temporary)],
+                    source=[munch_expression(stmNode.expression)],
+                    destination=[munch_expression(stmNode.temporary)],
                 )
             )
         elif isinstance(stmNode.temporary, IRT.Memory):
-            # TODO: Triple check that this Assembly operation is actually a Move
             # Move(mem(e1), e2): evaluates 'e1', yielding address 'addr'.
             # Then evaluate 'e2' and store the result into 'WordSize' bytes of memory
             # starting at 'addr'.
@@ -119,8 +121,8 @@ def munchStm(stmNode: IRT.Statement) -> None:
                 Assembly.Move(
                     line="movq %'s0, (%'s1)",
                     source=[
-                        munchExp(stmNode.expression),
-                        munchExp(stmNode.temporary.expression),
+                        munch_expression(stmNode.expression),
+                        munch_expression(stmNode.temporary.expression),
                     ],
                     destination=[],
                 )
@@ -129,7 +131,7 @@ def munchStm(stmNode: IRT.Statement) -> None:
             raise Exception("Munching an invalid version of node IRT.Move")
     # StatementExpression(exp): Evaluates 'exp' and discard the result.
     elif isinstance(stmNode, IRT.StatementExpression):
-        munchExp(stmNode.expression)
+        munch_expression(stmNode.expression)
     # We do not consider the cases for Sequence nodes here, given the modifications
     # done in chapter 8
     elif isinstance(stmNode, IRT.Sequence):
@@ -138,21 +140,34 @@ def munchStm(stmNode: IRT.Statement) -> None:
         raise Exception("No match for IRT node while munching a statement")
 
 
-def munchArgs(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
+def munch_arguments(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
     temp_list = []
-    for exp in arg_list:
-        temp = munchExp(exp)
-        temp_list += temp
+    for argument, register in zip(arg_list, Frame.argument_registers):
+        register_temp = Frame.TempMap.register_to_temp[register]
         emit(
             Assembly.Operation(
-                line="pushq %'s0", source=[temp], destination=[], jump=[]
+                line="movq %'s0 %'d0",
+                source=[munch_expression(argument)],
+                destination=[register_temp],
+                jump=[],
+            )
+        )
+        temp_list.append(register_temp)
+
+    for index in range(len(Frame.argument_registers), len(arg_list)):
+        emit(
+            Assembly.Operation(
+                line="pushq %'s0",
+                source=[munch_expression(arg_list[index])],
+                destination=[],
+                jump=[],
             )
         )
 
     return temp_list
 
 
-def munchExp(expNode: IRT.Expression) -> Temp.Temp:
+def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
     # BinaryOperation(operator, exp_left, exp_right): Apply the bynary operator
     # 'operator' to operands 'exp_left' and 'exp_right'. 'exp_left' is evaluated
     # before 'exp_right'.
@@ -172,14 +187,14 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             emit(
                 Assembly.Move(
                     line="movq %'s0, %'d0",
-                    source=[munchExp(expNode.left)],
+                    source=[munch_expression(expNode.left)],
                     destination=[temp],
                 )
             )
             emit(
                 Assembly.Operation(
                     line=f"{binary_operator_to_use[expNode.operator]} %'s1, %'d0",
-                    source=[temp, munchExp(expNode.right)],
+                    source=[temp, munch_expression(expNode.right)],
                     destination=[temp],
                     jump=[],
                 )
@@ -201,14 +216,13 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             # RDX has the remaining
 
             temp = Temp.TempManager.new_temp()
-            frame = Frame.Frame(...)
-            rax = frame.register_to_temp["rax"]
-            rdx = frame.register_to_temp["rdx"]
+            rax = Frame.TempMap.register_to_temp["rax"]
+            rdx = Frame.TempMap.register_to_temp["rdx"]
 
             emit(
                 Assembly.Move(
                     line="movq %'s0, %d0'",
-                    source=[munchExp(expNode.left)],
+                    source=[munch_expression(expNode.left)],
                     destination=[rax],
                 )
             )
@@ -220,7 +234,7 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             emit(
                 Assembly.Operation(
                     line=f"{binary_operator_to_use[expNode.operator]} %'s2",
-                    source=[rax, rdx, munchExp(expNode.right)],
+                    source=[rax, rdx, munch_expression(expNode.right)],
                     destination=[rax, rdx],
                     jump=[],
                 )
@@ -239,11 +253,11 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             ),
         ):
             # sal/sar/shr count, dst
-            dst_temp = munchExp(expNode.right)
+            dst_temp = munch_expression(expNode.right)
             emit(
                 Assembly.Operation(
                     line=f"{binary_operator_to_use[expNode.operator]} %'s0, %'d0",
-                    source=[munchExp(expNode.left), dst_temp],
+                    source=[munch_expression(expNode.left), dst_temp],
                     destination=[dst_temp],
                     jump=[],
                 )
@@ -259,7 +273,7 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
         emit(
             Assembly.Move(
                 line="movq (%'s0), %'d0",
-                source=[munchExp(expNode.expression)],
+                source=[munch_expression(expNode.expression)],
                 destination=[temp],
             )
         )
@@ -294,19 +308,26 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
     # to argument list 'args'. The subexpression 'function' is evaluated before the
     # arguments, which are evaluated left to right.
     elif isinstance(expNode, IRT.Call):
-        # Lo que deberíamos hacer:
-        # pushear caller saved arguments
-        # hacer el call (line="call expNode.function")
-        # popear caller saved arguments
+        caller_temp = [
+            Frame.TempMap.register_to_temp[register]
+            for register in Frame.caller_saved_registers
+            + Frame.argument_registers
+            + ["rax"]
+        ]
 
-        # rax = ...
-        # rsp = ...
-        # pushear caller saved arguments
-        # emit(Assembly.Operation(line="call 's0",
-        #                         source=[munchExp(stmNode.function)]++munchArgs(stmNode.arguments),
-        #                         destination=[],
-        #                         jump=[]))
-        pass
+        emit(
+            Assembly.Operation(
+                line="call 's0",
+                source=[munch_expression(expNode.function)]
+                + munch_arguments(expNode.arguments),
+                destination=caller_temp,
+                jump=[],
+            )
+        )
+
+        # TODO: hace falta mover el RSP de nuevo? Para mi no, Gianni duda.
+
+        return Frame.TempMap.register_to_temp["rax"]
     # We do not consider the cases for EvaluateSequence nodes here, given the modifications
     # done in chapter 8
     elif isinstance(expNode, IRT.EvaluateSequence):
