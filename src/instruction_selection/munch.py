@@ -87,7 +87,7 @@ def munch_statement(stmNode: IRT.Statement) -> None:
                     munch_expression(stmNode.right),
                 ],
                 destination=[],
-                jump=[],
+                jump=None,
             )
         )
         emit(
@@ -149,7 +149,7 @@ def munch_arguments(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
                 line="movq %'s0 %'d0",
                 source=[munch_expression(argument)],
                 destination=[register_temp],
-                jump=[],
+                jump=None,
             )
         )
         temp_list.append(register_temp)
@@ -160,7 +160,7 @@ def munch_arguments(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
                 line="pushq %'s0",
                 source=[munch_expression(arg_list[index])],
                 destination=[],
-                jump=[],
+                jump=None,
             )
         )
 
@@ -196,7 +196,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
                     line=f"{binary_operator_to_use[expNode.operator]} %'s1, %'d0",
                     source=[temp, munch_expression(expNode.right)],
                     destination=[temp],
-                    jump=[],
+                    jump=None,
                 )
             )
             return temp
@@ -228,7 +228,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
             )
             emit(
                 Assembly.Operation(
-                    line="cqto", source=[rax], destination=[rdx], jump=[]
+                    line="cqto", source=[rax], destination=[rdx], jump=None
                 )
             )
             emit(
@@ -236,7 +236,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
                     line=f"{binary_operator_to_use[expNode.operator]} %'s2",
                     source=[rax, rdx, munch_expression(expNode.right)],
                     destination=[rax, rdx],
-                    jump=[],
+                    jump=None,
                 )
             )
             emit(
@@ -259,7 +259,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
                     line=f"{binary_operator_to_use[expNode.operator]} %'s0, %'d0",
                     source=[munch_expression(expNode.left), dst_temp],
                     destination=[dst_temp],
-                    jump=[],
+                    jump=None,
                 )
             )
             return dst_temp
@@ -289,7 +289,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
                 line=f"leaq {expNode.Label}(%rip), %'d0",
                 source=[],
                 destination=[temp],
-                jump=[],
+                jump=None,
             )
         )
         return temp
@@ -321,7 +321,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
                 source=[munch_expression(expNode.function)]
                 + munch_arguments(expNode.arguments),
                 destination=caller_temp,
-                jump=[],
+                jump=None,
             )
         )
 
