@@ -25,9 +25,6 @@ def emit(instruction: Assembly.Instruction) -> None:
 # (%R): source read from Mem[%R], where R is a register
 # D(%R): source read from Mem[%R+D] where D is the displacement and R is a register
 
-# TODO: Add exceptions.
-# TODO: change assembly operations to match 64 bit use
-
 
 # TODO: Ask tomasu if a dictionary here is fine.
 comparison_operator_to_jump = {
@@ -161,13 +158,20 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
     # before 'exp_right'.
     if isinstance(expNode, IRT.BinaryOperation):
         if isinstance(
-            expNode.operator, (IRT.BinaryOperator.plus, IRT.BinaryOperator.minus)
+            expNode.operator,
+            (
+                IRT.BinaryOperator.plus,
+                IRT.BinaryOperator.minus,
+                IRT.BinaryOperator.andOp,
+                IRT.BinaryOperator.orOp,
+                IRT.BinaryOperator.xor,
+            ),
         ):
-            # add/sub src, dst
+            # add/sub/and/or/xor src, dst
             temp = Temp.TempManager.new_temp()
             emit(
                 Assembly.Move(
-                    line="movq %'s0, %'d0",  # mov src temp
+                    line="movq %'s0, %'d0",
                     source=[munchExp(expNode.left)],
                     destination=[temp],
                 )
@@ -226,29 +230,6 @@ def munchExp(expNode: IRT.Expression) -> Temp.Temp:
             )
             return temp
 
-        elif isinstance(
-            expNode.operator,
-            (IRT.BinaryOperator.andOp, IRT.BinaryOperator.orOp, IRT.BinaryOperator.xor),
-        ):
-            # and/or/xor src, dst
-            # TODO: add to previous case as to not repeat code.
-            temp = Temp.TempManager.new_temp()
-            emit(
-                Assembly.Move(
-                    line="movq %'s0, %'d0",
-                    source=[munchExp(expNode.left)],
-                    destination=[temp],
-                )
-            )
-            emit(
-                Assembly.Operation(
-                    line=f"{binary_operator_to_use[expNode.operator]} %'s1, %'d0",
-                    source=[temp, munchExp(expNode.right)],
-                    destination=[temp],
-                    jump=[],
-                )
-            )
-            return temp
         elif isinstance(
             expNode.operator,
             (
