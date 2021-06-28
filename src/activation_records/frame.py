@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from abc import ABC
 from activation_records.temp import Temp, TempLabel, TempManager
 import intermediate_representation.tree as IRT
+import instruction_selection.assembly as Assembly
 
 # Constant for the machine's word size.
 word_size = 8
@@ -164,6 +165,16 @@ def external_call(
 # The implementation of this function will be discussed on page 261.
 def proc_entry_exit1(frame: Frame, statement: IRT.Statement) -> IRT.Statement:
     return statement
+
+
+# This function appends a “sink” instruction to the function body to tell the
+# register allocator that certain registers are live at procedure exit.
+def sink(function_body: List[Assembly.Instruction]) -> List[Assembly.Instruction]:
+    # TODO: Check if rax needs to be in this list.
+    sink_registers = callee_saved_registers + ["rsp"]
+    sink_temps = [TempMap.register_to_temp[register] for register in sink_registers]
+    function_body.append(Assembly.Operation(line="", src=sink_temps, dst=[], jump=None))
+    return function_body
 
 
 # TODO: Cosa que existe pero problema del futuro.
