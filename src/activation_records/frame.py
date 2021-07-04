@@ -162,7 +162,8 @@ def external_call(
 # This applies the view shift of calling a function, which is explained in Chapter 6.
 # Looks like this method is explained later, so we can use a dummy implementation
 # that just returns stm for now.
-# The implementation of this function will be discussed on page 261.
+# The implementation of this function will be discussed on page 267 (C book).
+# TODO: Find a better name.
 def proc_entry_exit1(frame: Frame, statement: IRT.Statement) -> IRT.Statement:
     return statement
 
@@ -177,7 +178,12 @@ def sink(function_body: List[Assembly.Instruction]) -> List[Assembly.Instruction
     return function_body
 
 
-# TODO: Cosa que existe pero problema del futuro.
-# page 261
-def proc_entry_exit3():
-    pass
+# TODO: Find a better name.
+def proc_entry_exit3(
+    frame: Frame, body: List[Assembly.Instruction]
+) -> Assembly.Procedure:
+    # TODO: This is a scaffold version, as Appel calls it.
+    # It will be implemented for real in page 269 (niCe book).
+    return Assembly.Procedure(
+        prologue=f"PROCEDURE {frame.name}\n", body=body, epilogue=f"END {frame.name}\n"
+    )
