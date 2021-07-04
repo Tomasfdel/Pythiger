@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from abc import ABC
 from activation_records.temp import Temp, TempLabel, TempManager
 import intermediate_representation.tree as IRT
+import instruction_selection.assembly as Assembly
 
 # Constant for the machine's word size.
 word_size = 8
@@ -161,12 +162,28 @@ def external_call(
 # This applies the view shift of calling a function, which is explained in Chapter 6.
 # Looks like this method is explained later, so we can use a dummy implementation
 # that just returns stm for now.
-# The implementation of this function will be discussed on page 261.
+# The implementation of this function will be discussed on page 267 (C book).
+# TODO: Find a better name.
 def proc_entry_exit1(frame: Frame, statement: IRT.Statement) -> IRT.Statement:
     return statement
 
 
-# TODO: Cosa que existe pero problema del futuro.
-# page 261
-def proc_entry_exit3():
-    pass
+# This function appends a “sink” instruction to the function body to tell the
+# register allocator that certain registers are live at procedure exit.
+def sink(function_body: List[Assembly.Instruction]) -> List[Assembly.Instruction]:
+    # TODO: Check if rax needs to be in this list.
+    sink_registers = callee_saved_registers + ["rsp"]
+    sink_temps = [TempMap.register_to_temp[register] for register in sink_registers]
+    function_body.append(Assembly.Operation(line="", src=sink_temps, dst=[], jump=None))
+    return function_body
+
+
+# TODO: Find a better name.
+def proc_entry_exit3(
+    frame: Frame, body: List[Assembly.Instruction]
+) -> Assembly.Procedure:
+    # TODO: This is a scaffold version, as Appel calls it.
+    # It will be implemented for real in page 269 (niCe book).
+    return Assembly.Procedure(
+        prologue=f"PROCEDURE {frame.name}\n", body=body, epilogue=f"END {frame.name}\n"
+    )

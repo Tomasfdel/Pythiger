@@ -30,3 +30,10 @@ class Move(Instruction):
     line: str
     source: List[Temp]
     destination: List[Temp]
+
+
+@dataclass
+class Procedure:
+    prologue: str
+    body: List[Instruction]
+    epilogue: str
