@@ -3,29 +3,28 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Callable, List, Optional
 
-Register = str
-
 
 # Assembly language instruction without register assignments.
 class Instruction(ABC):
+    # Returns the instruction as a string, replacing the placeholders with temporaries.
     @abstractmethod
-    def format(tempMap: Callable[[Temp], str]) -> str:
+    def format(temp_map: Callable[[Temp], str]) -> str:
         pass
 
-    # TODO: Two-address instructions BREAK THIS BE CAREFOOL MAN.
-    # Check if we use any.
     def format_aux(
-        line: str, listList: List[List[Any]], tempMap: Callable[[Temp], str]
+        line: str, temp_list_list: List[List[Any]], temp_map: Callable[[Temp], str]
     ) -> str:
-        outputString = line
-        prefixList = ["'s", "'d", "'j"]
-        functionList = [tempMap, tempMap, str]
-        for (prefix, list, function) in zip(prefixList, listList, functionList):
-            for index in range(len(list)):
-                outputString = outputString.replace(
-                    f"{prefix}{index}", function(list[index])
+        output_string = line
+        prefix_list = ["'s", "'d", "'j"]
+        function_list = [temp_map, temp_map, str]
+        for (prefix, temp_list, function) in zip(
+            prefix_list, temp_list_list, function_list
+        ):
+            for index in range(len(temp_list)):
+                output_string = output_string.replace(
+                    f"{prefix}{index}", function(temp_list[index])
                 )
-        return outputString
+        return output_string
 
 
 @dataclass
@@ -35,8 +34,8 @@ class Operation(Instruction):
     destination: List[Temp]
     jump: Optional[List[TempLabel]]
 
-    def format(self, tempMap: Callable[[Temp], str]) -> str:
-        self.format_aux(self.line, [self.source, self.destination, self.jump], tempMap)
+    def format(self, temp_map: Callable[[Temp], str]) -> str:
+        self.format_aux(self.line, [self.source, self.destination, self.jump], temp_map)
 
 
 @dataclass
@@ -44,8 +43,8 @@ class Label(Instruction):
     line: str
     label: TempLabel
 
-    def format(self, tempMap: Callable[[Temp], str]) -> str:
-        self.format_aux(self.line, [], tempMap)
+    def format(self, temp_map: Callable[[Temp], str]) -> str:
+        self.format_aux(self.line, [], temp_map)
 
 
 @dataclass
@@ -54,5 +53,5 @@ class Move(Instruction):
     source: List[Temp]
     destination: List[Temp]
 
-    def format(self, tempMap: Callable[[Temp], str]) -> str:
-        self.format_aux(self.line, [self.source, self.destination], tempMap)
+    def format(self, temp_map: Callable[[Temp], str]) -> str:
+        self.format_aux(self.line, [self.source, self.destination], temp_map)
