@@ -3,6 +3,7 @@ import assembly as Assembly
 import activation_records.temp as Temp
 import activation_records.frame as Frame
 from typing import List
+from codegen import Codegen
 
 # x86-64
 # AT&T syntax:
@@ -15,15 +16,6 @@ from typing import List
 # 0xaddr: source read from Mem[0xaddr]
 # (%R): source read from Mem[%R], where R is a register
 # D(%R): source read from Mem[%R+D] where D is the displacement and R is a register
-
-
-# TODO: Delete when codegen module is implemented.
-from activation_records.temp import temp_to_str
-
-
-# TODO: Delete when codegen module is implemented.
-def emit(instruction: Assembly.Instruction) -> None:
-    print(instruction.format(temp_to_str))
 
 
 def convert_relational_operator(operator: IRT.RelationalOperator) -> str:
@@ -65,13 +57,13 @@ def munch_statement(stmNode: IRT.Statement) -> None:
     # Label(label): The constant value of name 'label', defined to be the current
     # machine code address.
     if isinstance(stmNode, IRT.Label):
-        emit(Assembly.Label(line=f"{stmNode.label}:\n", label=stmNode.label))
+        Codegen.emit(Assembly.Label(line=f"{stmNode.label}:\n", label=stmNode.label))
 
     # Jump (addr, labels): Transfer control to address 'addr'. The destination may
     # be a literal label, or it may be an address calculated by any other kind of expression.
     # The list of labels 'labels' specifies all possible locations that 'addr' may jump to.
     elif isinstance(stmNode, IRT.Jump):
-        emit(
+        Codegen.emit(
             Assembly.Operation(
                 line="jmp 'j0\n", source=[], destination=[], jump=stmNode.labels
             )
@@ -83,7 +75,7 @@ def munch_statement(stmNode: IRT.Statement) -> None:
     elif isinstance(stmNode, IRT.ConditionalJump):
         # The jump itself checks the flags in the EFL register.
         # These are usually set with TEST or CMP.
-        emit(
+        Codegen.emit(
             Assembly.Operation(
                 line="cmpq %'s0, %'s1\n",
                 source=[
@@ -94,7 +86,7 @@ def munch_statement(stmNode: IRT.Statement) -> None:
                 jump=None,
             )
         )
-        emit(
+        Codegen.emit(
             Assembly.Operation(
                 line=f"{convert_relational_operator(stmNode.operator)} 'j0\n",
                 source=[],
@@ -111,7 +103,7 @@ def munch_statement(stmNode: IRT.Statement) -> None:
 
         # Move(Temporary t, exp): evaluates 'exp' and moves it to temporary 't'.
         if isinstance(stmNode.temporary, IRT.Temporary):
-            emit(
+            Codegen.emit(
                 Assembly.Move(
                     line="movq %'s0, %'d0\n",
                     source=[munch_expression(stmNode.expression)],
@@ -123,7 +115,7 @@ def munch_statement(stmNode: IRT.Statement) -> None:
         # Then evaluate 'e2' and store the result into 'WordSize' bytes of memory
         # starting at 'addr'.
         elif isinstance(stmNode.temporary, IRT.Memory):
-            emit(
+            Codegen.emit(
                 Assembly.Move(
                     line="movq %'s0, (%'s1)\n",
                     source=[
@@ -155,7 +147,7 @@ def munch_arguments(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
     temp_list = []
     for argument, register in zip(arg_list, Frame.argument_registers):
         register_temp = Frame.TempMap.register_to_temp[register]
-        emit(
+        Codegen.emit(
             Assembly.Operation(
                 line="movq %'s0 %'d0\n",
                 source=[munch_expression(argument)],
@@ -167,7 +159,7 @@ def munch_arguments(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
 
     # Push the remaining arguments to the stack (if any).
     for index in range(len(Frame.argument_registers), len(arg_list)):
-        emit(
+        Codegen.emit(
             Assembly.Operation(
                 line="pushq %'s0\n",
                 source=[munch_expression(arg_list[index])],
@@ -196,14 +188,14 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
         ):
             # add/sub/and/or/xor src, dst
             temp = Temp.TempManager.new_temp()
-            emit(
+            Codegen.emit(
                 Assembly.Move(
                     line="movq %'s0, %'d0\n",
                     source=[munch_expression(expNode.left)],
                     destination=[temp],
                 )
             )
-            emit(
+            Codegen.emit(
                 Assembly.Operation(
                     line=f"{convert_binary_operator(expNode.operator)} %'s1, %'d0\n",
                     source=[temp, munch_expression(expNode.right)],
@@ -236,7 +228,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
             rax = Frame.TempMap.register_to_temp["rax"]
             rdx = Frame.TempMap.register_to_temp["rdx"]
 
-            emit(
+            Codegen.emit(
                 Assembly.Move(
                     line="movq %'s0, %'d0\n",
                     source=[munch_expression(expNode.left)],
@@ -244,12 +236,12 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
                 )
             )
             # R[%rdx]:R[%rax] <- SignExtend(R[%rax])
-            emit(
+            Codegen.emit(
                 Assembly.Operation(
                     line="cqto\n", source=[rax], destination=[rdx], jump=None
                 )
             )
-            emit(
+            Codegen.emit(
                 Assembly.Operation(
                     line=f"{convert_binary_operator(expNode.operator)} %'s2\n",
                     source=[rax, rdx, munch_expression(expNode.right)],
@@ -257,7 +249,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
                     jump=None,
                 )
             )
-            emit(
+            Codegen.emit(
                 Assembly.Move(
                     line="movq %'s0, %'d0\n", source=[rax], destination=[temp]
                 )
@@ -274,7 +266,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
         ):
             # sal/sar/shr count, dst : dst <<=/>>= count
             dst_temp = munch_expression(expNode.left)
-            emit(
+            Codegen.emit(
                 Assembly.Operation(
                     line=f"{convert_binary_operator(expNode.operator)} %'s0, %'d0\n",
                     source=[munch_expression(expNode.right), dst_temp],
@@ -292,7 +284,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
     # Memory(addr): The contents of 'Frame.word_size' bytes of memory, starting at address addr.
     elif isinstance(expNode, IRT.Memory):
         temp = Temp.TempManager.new_temp()
-        emit(
+        Codegen.emit(
             Assembly.Move(
                 line="movq (%'s0), %'d0\n",
                 source=[munch_expression(expNode.expression)],
@@ -308,7 +300,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
     # Name(n): Symbolic constant 'n' corresponding to an assembly language label.
     elif isinstance(expNode, IRT.Name):
         temp = Temp.TempManager.new_temp()
-        emit(
+        Codegen.emit(
             Assembly.Operation(
                 line=f"leaq {expNode.Label}(%rip), %'d0\n",
                 source=[],
@@ -321,7 +313,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
     # Constant(const): The integer constant 'const'.
     elif isinstance(expNode, IRT.Constant):
         temp = Temp.TempManager.new_temp()
-        emit(
+        Codegen.emit(
             Assembly.Move(
                 line=f"movq ${expNode.value}, %'d0\n",
                 source=[],
@@ -346,7 +338,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
         ]
 
         if isinstance(expNode.function, IRT.Name):
-            emit(
+            Codegen.emit(
                 Assembly.Operation(
                     line=f"call {expNode.function.label}\n",
                     source=munch_arguments(expNode.arguments),

@@ -34,6 +34,10 @@ def main():
 
     process_bodies = canonize_process_fragments()
 
+    # TODO: Add code generation.
+    # instruction_list = Codegen.codegen(statement_list)
+    # line_list = [instruction.format(temp_to_str) for instruction in instruction_list]
+
     print("All good!")
     print(analysed_program.type)
     print("Process fragment amount:", len(process_bodies))
