@@ -55,3 +55,10 @@ class Move(Instruction):
 
     def format(self, temp_map: Callable[[Temp], str]) -> str:
         self.format_aux(self.line, [self.source, self.destination], temp_map)
+
+
+@dataclass
+class Procedure:
+    prologue: str
+    body: List[Instruction]
+    epilogue: str
