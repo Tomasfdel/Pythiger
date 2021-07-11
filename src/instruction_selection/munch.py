@@ -300,10 +300,11 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
     # Name(n): Symbolic constant 'n' corresponding to an assembly language label.
     elif isinstance(expNode, IRT.Name):
         temp = Temp.TempManager.new_temp()
+        rip = Frame.TempMap.register_to_temp["rip"]
         Codegen.emit(
             Assembly.Operation(
-                line=f"leaq {expNode.Label}(%rip), %'d0\n",
-                source=[],
+                line=f"leaq {expNode.Label}(%'s0), %'d0\n",
+                source=[rip],
                 destination=[temp],
                 jump=None,
             )
