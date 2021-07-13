@@ -1,7 +1,5 @@
 from abc import ABC
 
-# TODO: Placeholder for testing.
-from frame import TempMap
 
 Temp = int
 TempLabel = str
@@ -27,12 +25,3 @@ class TempManager(ABC):
     @classmethod
     def named_label(cls, name: str) -> TempLabel:
         return name
-
-
-# TODO: Placeholder for testing.
-def temp_to_str(temp: Temp) -> str:
-    register = TempMap.temp_to_register.get(temp)
-    if register:
-        return register
-
-    return f"t{temp}"
