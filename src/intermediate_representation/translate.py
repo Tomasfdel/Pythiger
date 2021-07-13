@@ -41,7 +41,7 @@ from intermediate_representation.tree import (
 
 
 def simple_variable(access: Access, level: Level) -> TranslatedExpression:
-    result = Temporary(frame.frame_pointer)
+    result = Temporary(frame.frame_pointer())
     current_level = level
     while current_level is not access.level:
         static_link_access = current_level.formals()[0]
@@ -109,7 +109,8 @@ def call_expression(
     argument_expressions = [
         convert_to_expression(argument) for argument in argument_list
     ]
-    static_link_expression = Temporary(frame.frame_pointer)
+    static_link_expression = Temporary(frame.frame_pointer())
+
     current_level = caller_level
     while current_level is not function_level.parent:
         current_static_link = current_level.formals()[0]
@@ -336,7 +337,7 @@ def empty_expression() -> TranslatedExpression:
 
 def proc_entry_exit(function_level: RealLevel, body: TranslatedExpression):
     # TODO: The book also adds a formals: List[Access] argument. No idea why.
-    body_statement = Move(Temporary(frame.return_value), convert_to_expression(body))
+    body_statement = Move(Temporary(frame.return_value()), convert_to_expression(body))
     proc_statement = frame.proc_entry_exit1(function_level.frame, body_statement)
     FragmentManager.add_fragment(ProcessFragment(proc_statement, function_level.frame))
 
