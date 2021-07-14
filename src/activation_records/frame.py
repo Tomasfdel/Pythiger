@@ -37,34 +37,38 @@ all_registers = (
 )
 
 
-# Bidirectional mapping between registers and temporaries using the Singleton pattern.
-class TempMap(object):
-    _instance = None
+# Bidirectional mapping between registers and temporaries.
+class TempMap:
     # Dictionary mapping registers to temporaries.
     register_to_temp = {}
     # Dictionary mapping temporaries to registers.
     temp_to_register = {}
 
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(TempMap, cls).__new__(cls)
-
-            for register in all_registers:
-                temp = TempManager.new_temp()
-                cls.register_to_temp[register] = temp
-                cls.temp_to_register[temp] = register
-
-        return cls._instance
+    @classmethod
+    def initialize(cls):
+        for register in all_registers:
+            temp = TempManager.new_temp()
+            cls.register_to_temp[register] = temp
+            cls.temp_to_register[temp] = register
 
 
 # Temporal corresponding to the frame pointer register rbp.
-def frame_pointer(self) -> Temp:
-    return TempMap().register_to_temp["rbp"]
+def frame_pointer() -> Temp:
+    return TempMap.register_to_temp["rbp"]
 
 
 # Temporal corresponding to the return value register rax.
-def return_value(self) -> Temp:
-    return TempMap().register_to_temp["rax"]
+def return_value() -> Temp:
+    return TempMap.register_to_temp["rax"]
+
+
+# TODO: Placeholder for testing.
+def temp_to_str(temp: Temp) -> str:
+    register = TempMap.temp_to_register.get(temp)
+    if register:
+        return register
+
+    return f"t{temp}"
 
 
 # Access describes formals and locals stored in a frame or in registers.
@@ -118,7 +122,7 @@ class Frame:
     # to access_list.
     def _alloc_single_var(self, escape: bool, access_list: List[Access]) -> Access:
         if escape:
-            self.offset -= Frame.word_size
+            self.offset -= word_size
             access_list.append(InFrame(self.offset))
         else:
             access_list.append(InRegister(TempManager.new_temp()))

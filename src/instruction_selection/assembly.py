@@ -1,30 +1,19 @@
 from activation_records.temp import Temp, TempLabel
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Callable, List, Optional
+from typing import Callable, List, Optional
 
 
 # Assembly language instruction without register assignments.
 class Instruction(ABC):
     # Returns the instruction as a string, replacing the placeholders with temporaries.
     @abstractmethod
-    def format(temp_map: Callable[[Temp], str]) -> str:
+    def format(self, temp_map: Callable[[Temp], str]) -> str:
         pass
 
-    def format_aux(
-        line: str, temp_list_list: List[List[Any]], temp_map: Callable[[Temp], str]
-    ) -> str:
-        output_string = line
-        prefix_list = ["'s", "'d", "'j"]
-        function_list = [temp_map, temp_map, str]
-        for (prefix, temp_list, function) in zip(
-            prefix_list, temp_list_list, function_list
-        ):
-            for index in range(len(temp_list)):
-                output_string = output_string.replace(
-                    f"{prefix}{index}", function(temp_list[index])
-                )
-        return output_string
+    def replace(self, prefix: str, replacements: List[str]):
+        for index in range(len(replacements)):
+            self.line = self.line.replace(f"{prefix}{index}", replacements[index])
 
 
 @dataclass
@@ -35,7 +24,12 @@ class Operation(Instruction):
     jump: Optional[List[TempLabel]]
 
     def format(self, temp_map: Callable[[Temp], str]) -> str:
-        self.format_aux(self.line, [self.source, self.destination, self.jump], temp_map)
+        self.replace("'s", [temp_map(src) for src in self.source])
+        self.replace("'d", [temp_map(dst) for dst in self.destination])
+        if self.jump is not None:
+            self.replace("'j", self.jump)
+
+        return self.line
 
 
 @dataclass
@@ -44,7 +38,7 @@ class Label(Instruction):
     label: TempLabel
 
     def format(self, temp_map: Callable[[Temp], str]) -> str:
-        self.format_aux(self.line, [], temp_map)
+        return self.line
 
 
 @dataclass
@@ -54,7 +48,10 @@ class Move(Instruction):
     destination: List[Temp]
 
     def format(self, temp_map: Callable[[Temp], str]) -> str:
-        self.format_aux(self.line, [self.source, self.destination], temp_map)
+        self.replace("'s", [temp_map(src) for src in self.source])
+        self.replace("'d", [temp_map(dst) for dst in self.destination])
+
+        return self.line
 
 
 @dataclass

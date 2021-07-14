@@ -1,5 +1,6 @@
 from abc import ABC
 
+
 Temp = int
 TempLabel = str
 
@@ -24,7 +25,3 @@ class TempManager(ABC):
     @classmethod
     def named_label(cls, name: str) -> TempLabel:
         return name
-
-# TODO: Placeholder for testing.
-def temp_to_str(temp: Temp) -> str:
-    return f"t{temp}"
