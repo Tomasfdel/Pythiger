@@ -5,6 +5,70 @@ from dataclasses import dataclass
 from abc import ABC
 from activation_records.temp import Temp, TempLabel, TempManager
 import intermediate_representation.tree as IRT
+import instruction_selection.assembly as Assembly
+
+# Constant for the machine's word size.
+word_size = 8
+
+# The register lists should not overlap according to Appel, but some are
+# ambiguous (like rbp, which is "special" but also callee-saved).
+# The assignment to each list has been done in accordance to:
+# https://web.stanford.edu/class/archive/cs/cs107/cs107.1216/resources/x86-64-reference.pdf
+
+# A list of registers used to implement "special" registers.
+special_registers = ["rip", "rsp", "rax"]
+
+# A list of registers in which to pass outgoing arguments
+# (including the static link).
+argument_registers = ["rdi", "rsi", "rdx", "rcx", "r8", "r9"]
+
+# A list of registers that the called procedure (callee) must preserve
+# unchanged (or save and restore).
+callee_saved_registers = ["rbx", "rbp", "r12", "r13", "r14", "r15"]
+
+# A list of registers that the callee may trash.
+caller_saved_registers = ["r10", "r11"]
+
+all_registers = (
+    special_registers
+    + argument_registers
+    + callee_saved_registers
+    + caller_saved_registers
+)
+
+
+# Bidirectional mapping between registers and temporaries.
+class TempMap:
+    # Dictionary mapping registers to temporaries.
+    register_to_temp = {}
+    # Dictionary mapping temporaries to registers.
+    temp_to_register = {}
+
+    @classmethod
+    def initialize(cls):
+        for register in all_registers:
+            temp = TempManager.new_temp()
+            cls.register_to_temp[register] = temp
+            cls.temp_to_register[temp] = register
+
+
+# Temporal corresponding to the frame pointer register rbp.
+def frame_pointer() -> Temp:
+    return TempMap.register_to_temp["rbp"]
+
+
+# Temporal corresponding to the return value register rax.
+def return_value() -> Temp:
+    return TempMap.register_to_temp["rax"]
+
+
+# TODO: Placeholder for testing.
+def temp_to_str(temp: Temp) -> str:
+    register = TempMap.temp_to_register.get(temp)
+    if register:
+        return register
+
+    return f"t{temp}"
 
 
 # Access describes formals and locals stored in a frame or in registers.
@@ -24,28 +88,12 @@ class InRegister(Access):
     register: Temp
 
 
-# TODO: Ver que onda la asignacion de registros a temporales.
-# No entendemos por que Compiladori usa 32 bit registers.
-# No entendemos por que le asignamos temporales a registros.
-rbp = TempManager.new_temp()
-rax = TempManager.new_temp()
-
-# Frame pointer register FP.
-FP = rbp
-
-# Location of a function's return value (RV) as specified by the machine-specific frame structure.
-RV = rax
-
-
 # Frame is the class responsible for:
 # * the locations of all the formals.
 # * instructions required to implement the "view shift".
 # * the number of locals allocated so far.
 # * the label at which the function's machine code is to begin.
 class Frame:
-    # Constant for the machine's word size.
-    word_size = 8
-
     # Creates a new frame for function "name" with "formalEscapes" list of
     # booleans (list of parameters for function "name"). True means
     # escaped variable.
@@ -55,6 +103,7 @@ class Frame:
         # Non-volatile registers are stored starting at -8(%rbp).
         # (subtraction is performed before allocation)
         self.offset = 0
+
         # [Access] denoting the locations where the formal parameters will be
         # kept at run time, as seen from inside the callee.
         self.formal_parameters = []
@@ -73,7 +122,7 @@ class Frame:
     # to access_list.
     def _alloc_single_var(self, escape: bool, access_list: List[Access]) -> Access:
         if escape:
-            self.offset -= Frame.word_size
+            self.offset -= word_size
             access_list.append(InFrame(self.offset))
         else:
             access_list.append(InRegister(TempManager.new_temp()))
@@ -84,9 +133,10 @@ class Frame:
     # Number of allocated locals so far.
 
 
-# This function is used by Translate to turn a Frame_access into an intermediate representation
-# Tree expression. The Tree_exp argument is the address of the stack frame that the access lives in.
-# If acc is a register access, such as InReg(t82), then the frame address argument will be discarded
+# This function is used by Translate to turn a Frame.Access into an IRT.Expression.
+# The frame_pointer argument is the address of the stack frame that the access lives in.
+# If access is a register access, such as InReg(t82), then the frame_pointer argument
+# will be discarded.
 def access_to_exp(access: Access, frame_pointer: IRT.Expression) -> IRT.Expression:
     if isinstance(access, InFrame):
         return IRT.Memory(
@@ -116,12 +166,28 @@ def external_call(
 # This applies the view shift of calling a function, which is explained in Chapter 6.
 # Looks like this method is explained later, so we can use a dummy implementation
 # that just returns stm for now.
-# The implementation of this function will be discussed on page 261.
+# The implementation of this function will be discussed on page 267 (C book).
+# TODO: Find a better name.
 def proc_entry_exit1(frame: Frame, statement: IRT.Statement) -> IRT.Statement:
     return statement
 
 
-# TODO: Cosa que existe pero problema del futuro.
-# page 261
-def proc_entry_exit3():
-    pass
+# This function appends a “sink” instruction to the function body to tell the
+# register allocator that certain registers are live at procedure exit.
+def sink(function_body: List[Assembly.Instruction]) -> List[Assembly.Instruction]:
+    # TODO: Check if rax needs to be in this list.
+    sink_registers = callee_saved_registers + ["rsp"]
+    sink_temps = [TempMap.register_to_temp[register] for register in sink_registers]
+    function_body.append(Assembly.Operation(line="", src=sink_temps, dst=[], jump=None))
+    return function_body
+
+
+# TODO: Find a better name.
+def proc_entry_exit3(
+    frame: Frame, body: List[Assembly.Instruction]
+) -> Assembly.Procedure:
+    # TODO: This is a scaffold version, as Appel calls it.
+    # It will be implemented for real in page 269 (niCe book).
+    return Assembly.Procedure(
+        prologue=f"PROCEDURE {frame.name}\n", body=body, epilogue=f"END {frame.name}\n"
+    )

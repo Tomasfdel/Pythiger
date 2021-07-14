@@ -1,5 +1,6 @@
 from abc import ABC
 
+
 Temp = int
 TempLabel = str
 

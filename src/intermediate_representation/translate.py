@@ -41,7 +41,7 @@ from intermediate_representation.tree import (
 
 
 def simple_variable(access: Access, level: Level) -> TranslatedExpression:
-    result = Temporary(frame.FP)
+    result = Temporary(frame.frame_pointer())
     current_level = level
     while current_level is not access.level:
         static_link_access = current_level.formals()[0]
@@ -61,7 +61,7 @@ def field_variable(
                 BinaryOperation(
                     BinaryOperator.mul,
                     Constant(field_index),
-                    Constant(frame.Frame.word_size),
+                    Constant(frame.word_size),
                 ),
             )
         )
@@ -79,7 +79,7 @@ def subscript_variable(
                 BinaryOperation(
                     BinaryOperator.mul,
                     convert_to_expression(subscript),
-                    Constant(frame.Frame.word_size),
+                    Constant(frame.word_size),
                 ),
             )
         )
@@ -109,7 +109,8 @@ def call_expression(
     argument_expressions = [
         convert_to_expression(argument) for argument in argument_list
     ]
-    static_link_expression = Temporary(frame.FP)
+    static_link_expression = Temporary(frame.frame_pointer())
+
     current_level = caller_level
     while current_level is not function_level.parent:
         current_static_link = current_level.formals()[0]
@@ -164,7 +165,7 @@ def record_expression(field_list: List[TranslatedExpression]) -> TranslatedExpre
         Move(
             Temporary(result),
             frame.external_call(
-                "initRecord", [Constant(len(field_list) * frame.Frame.word_size)]
+                "initRecord", [Constant(len(field_list) * frame.word_size)]
             ),
         )
     ]
@@ -175,7 +176,7 @@ def record_expression(field_list: List[TranslatedExpression]) -> TranslatedExpre
                 BinaryOperation(
                     BinaryOperator.plus,
                     Temporary(result),
-                    Constant(index * frame.Frame.word_size),
+                    Constant(index * frame.word_size),
                 )
             ),
             convert_to_expression(field_expression),
@@ -336,7 +337,7 @@ def empty_expression() -> TranslatedExpression:
 
 def proc_entry_exit(function_level: RealLevel, body: TranslatedExpression):
     # TODO: The book also adds a formals: List[Access] argument. No idea why.
-    body_statement = Move(Temporary(frame.RV), convert_to_expression(body))
+    body_statement = Move(Temporary(frame.return_value()), convert_to_expression(body))
     proc_statement = frame.proc_entry_exit1(function_level.frame, body_statement)
     FragmentManager.add_fragment(ProcessFragment(proc_statement, function_level.frame))
 
