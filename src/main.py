@@ -1,5 +1,7 @@
 from activation_records.frame import TempMap, temp_to_str
-from canonical.canonize import canonize_process_fragments
+from canonical.canonize import canonize
+from intermediate_representation.fragment import FragmentManager, ProcessFragment
+from register_allocation.allocation import RegisterAllocator
 from semantic_analysis.analyzers import SemanticError, translate_program
 from instruction_selection.codegen import Codegen
 from lexer import lex as le
@@ -35,18 +37,29 @@ def main():
         print(err)
         return
 
-    process_bodies = canonize_process_fragments()
+    # Canonization
+    process_fragments = [
+        fragment
+        for fragment in FragmentManager.get_fragments()
+        if isinstance(fragment, ProcessFragment)
+    ]
+    canonized_bodies = [canonize(fragment.body) for fragment in process_fragments]
 
     # Instruction Selection
-    assembly_bodies = [Codegen.codegen(process_body) for process_body in process_bodies]
+    assembly_bodies = [
+        Codegen.codegen(process_body) for process_body in canonized_bodies
+    ]
 
     print("All good!")
     print(analysed_program.type)
-    print("Process fragment amount:", len(process_bodies))
-    print("Process fragments:")
-    for assembly_body in assembly_bodies:
-        for assembly_line in assembly_body:
-            print(assembly_line.format(temp_to_str))
+    print("Process fragment amount:", len(canonized_bodies))
+
+    # Register Allocation
+    for body, fragment in zip(assembly_bodies, process_fragments):
+        allocation_result = RegisterAllocator(fragment.frame).main(body)
+        TempMap.update_temp_to_register(allocation_result.temp_to_register)
+        for instruction in allocation_result.instructions:
+            print(instruction.format(temp_to_str))
         print("*" * 5)
 
 

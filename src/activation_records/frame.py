@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 from dataclasses import dataclass
 
@@ -50,6 +50,13 @@ class TempMap:
             temp = TempManager.new_temp()
             cls.register_to_temp[register] = temp
             cls.temp_to_register[temp] = register
+
+    @classmethod
+    def update_temp_to_register(cls, register_allocation: Dict[Temp, Temp]):
+        for temporary in register_allocation:
+            cls.temp_to_register[temporary] = cls.temp_to_register[
+                register_allocation[temporary]
+            ]
 
 
 # Temporal corresponding to the frame pointer register rbp.
