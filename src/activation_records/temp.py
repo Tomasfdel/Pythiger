@@ -19,9 +19,6 @@ class TempManager(ABC):
         cls.label_count += 1
         return f"lab_{cls.label_count}"
 
-    # TODO: Esto es necesario?
-    # Si es necesario, que pasa cuando ya existe la label?
-    # Parece que nada, nadie puso guards.
     @classmethod
     def named_label(cls, name: str) -> TempLabel:
         return name

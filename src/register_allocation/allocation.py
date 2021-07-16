@@ -1,5 +1,4 @@
-from enum import Enum, auto
-from typing import List, Set, Dict
+from typing import List, Set, Dict, Tuple
 
 from dataclasses import dataclass
 
@@ -12,60 +11,18 @@ from liveness_analysis.graph import Graph
 from liveness_analysis.liveness import liveness
 
 
-# TODO: See how to integrate this into the nodes.
-# TODO: Remove precolored and initial?
-class Worklist(Enum):
-    precolored = auto()
-    initial = auto()
-    simplify_worklist = auto()
-    freeze_worklist = auto()
-    spill_worklist = auto()
-    spilled_nodes = auto()
-    coalesced_nodes = auto()
-    colored_nodes = auto()
-    select_stack = auto()
-
-
-# TODO: See how to integrate this into the moves.
-class MoveSet(Enum):
-    coalesced = auto()
-    constrained = auto()
-    frozen = auto()
-    worklist = auto()
-    active = auto()
-
-
-# TODO: See if I use this as long as the enums above.
-# @dataclass
-# class TemporaryNode:
-#     temporary: Temp
-#     worklist: Worklist
-#
-# @dataclass
-# class MoveNode:
-#     move: Move
-#     move_set: MoveSet
-
-
 @dataclass
 class AllocationResult:
     instructions: List[Instruction]
     temp_to_register: Dict[Temp, Temp]
 
 
-# TODO: Define whether I should use 'node' or 'temporary' and then be consistent with that choice.
-# TODO: Maybe reorder the methods?
 class RegisterAllocator:
     def __init__(self, frame: Frame):
         self.frame = frame
 
-    # TODO: Renombra esto por favor.
     def main(self, instructions: List[Instruction]) -> AllocationResult:
-        # TODO: Debería ser self? Debería eliminarse altogether y ser llamada sólo en el initialize?
-
         self._initialize_data_structures(instructions)
-        # TODO: Probably should delete this method and just call it as part of the initialization.
-        self._make_worklist()
 
         while (
             self.simplify_worklist
@@ -89,60 +46,56 @@ class RegisterAllocator:
 
         return AllocationResult(instructions, self.color)
 
-    # TODO: See if the whole initialization mambo jumbo can be done in a cleaner way.
-    # i.e. initializing everything in a single function and then making the initial updates.
     def _initialize_data_structures(self, instructions: List[Instruction]):
-        # TODO: Consider refactoring the names of these.
-        # TODO: Probably many of these are not empty at the start.
-        # According to Appel, precolored and initial are non-empty at the start
-        # and on exiting rewrite_program.
-
-        # TODO: See which ones should be lists, and if I should use sets or dicts for some of them.
         flow_graph_results = assembler_flow_graph(instructions)
-        liveness_results = liveness(flow_graph_results.flow_graph)
-        self.temp_uses = flow_graph_results.temp_uses
-        self.temp_definitions = flow_graph_results.temp_definitions
+        self.temp_uses: Dict[Temp, List[Instruction]] = flow_graph_results.temp_uses
+        self.temp_definitions: Dict[
+            Temp, List[Instruction]
+        ] = flow_graph_results.temp_definitions
 
+        liveness_results = liveness(flow_graph_results.flow_graph)
         all_temporaries = [
             node.information for node in liveness_results.interference_graph.get_nodes()
         ]
 
-        # TODO: Add a typehint for all of these so PyCharm can help me trace potential errors
-        #  (and make this way more understandable).
-        self.precolored = list(TempMap.register_to_temp.values())
-        self.color_amount = len(self.precolored)
-        self.initial = [
+        self.precolored: List[Temp] = list(TempMap.register_to_temp.values())
+        self.color_amount: int = len(self.precolored)
+        self.initial: List[Temp] = [
             temporary
             for temporary in all_temporaries
             if temporary not in self.precolored
         ]
 
-        self.simplify_worklist = []
-        self.freeze_worklist = []
-        self.spill_worklist = []
-        self.spilled_nodes = []
-        self.coalesced_nodes = []
-        self.colored_nodes = []
-        self.select_stack = []
+        self.simplify_worklist: List[Temp] = []
+        self.freeze_worklist: List[Temp] = []
+        self.spill_worklist: List[Temp] = []
+        self.spilled_nodes: List[Temp] = []
+        self.coalesced_nodes: List[Temp] = []
+        self.colored_nodes: List[Temp] = []
+        self.select_stack: List[Temp] = []
 
-        # TODO: Every move is in exactly one of these sets (after initialize through the end).
-        self.coalesced_moves = []
-        self.constrained_moves = []
-        self.frozen_moves = []
-        self.worklist_moves = liveness_results.move_instructions
-        self.active_moves = []
+        self.coalesced_moves: List[Move] = []
+        self.constrained_moves: List[Move] = []
+        self.frozen_moves: List[Move] = []
+        self.worklist_moves: List[Move] = liveness_results.move_instructions
+        self.active_moves: List[Move] = []
 
         self._initialize_adjacency_structures(liveness_results.interference_graph)
-        self.move_list = liveness_results.temporary_to_moves
+        self.move_list: Dict[Temp, List[Move]] = liveness_results.temporary_to_moves
 
-        self.alias = {}
-        self.color = {temporary: temporary for temporary in self.precolored}
+        self.alias: Dict[Temp, Temp] = {}
+        self.color: Dict[Temp, Temp] = {
+            temporary: temporary for temporary in self.precolored
+        }
+
+        self._make_worklist()
 
     def _initialize_adjacency_structures(self, interference_graph: Graph[Temp]):
-        self.adjacencies = set()
-        self.adjacent_nodes = {temporary: [] for temporary in self.initial}
-        # TODO: Find a better solution than using 999999.
-        self.node_degree = {
+        self.adjacencies: Set[Tuple[Temp, Temp]] = set()
+        self.adjacent_nodes: Dict[Temp, List[Temp]] = {
+            temporary: [] for temporary in self.initial
+        }
+        self.node_degree: Dict[Temp, int] = {
             temporary: 0 if temporary in self.initial else 999999
             for temporary in self.initial + self.precolored
         }
@@ -216,7 +169,6 @@ class RegisterAllocator:
     def _coalesce(self):
         while self.worklist_moves:
             move = self.worklist_moves.pop(0)
-            # TODO: Por el amor de Dios usá otros nombres cuando sepas qué hace esto.
             x = self._get_alias(move.source[0])
             y = self._get_alias(move.destination[0])
             if y in self.precolored:

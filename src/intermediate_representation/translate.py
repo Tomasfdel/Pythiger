@@ -210,7 +210,6 @@ def if_expression(
 ) -> TranslatedExpression:
     test_condition = convert_to_condition(test)
     then_expression = convert_to_expression(then)
-    # TODO: Not sure about this one below.
     else_expression = (
         convert_to_expression(else_do) if else_do is not None else Constant(0)
     )
