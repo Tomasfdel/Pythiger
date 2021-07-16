@@ -150,7 +150,7 @@ def munch_arguments(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
         register_temp = Frame.TempMap.register_to_temp[register]
         Codegen.emit(
             Assembly.Operation(
-                line="movq %'s0 %'d0\n",
+                line="movq %'s0, %'d0\n",
                 source=[munch_expression(argument)],
                 destination=[register_temp],
                 jump=None,
