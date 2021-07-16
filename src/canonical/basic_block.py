@@ -12,6 +12,7 @@ from intermediate_representation.tree import (
 )
 
 
+# TODO: The done label in this structure may not be needed.
 @dataclass
 class BasicBlock:
     label: TempLabel

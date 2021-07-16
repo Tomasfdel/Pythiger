@@ -332,7 +332,9 @@ class RegisterAllocator:
                     self._get_alias(adjacent_node) in self.colored_nodes
                     or self._get_alias(adjacent_node) in self.precolored
                 ):
-                    possible_colors.remove(self.color[self._get_alias(adjacent_node)])
+                    adjacent_node_color = self.color[self._get_alias(adjacent_node)]
+                    if adjacent_node_color in possible_colors:
+                        possible_colors.remove(adjacent_node_color)
             if not possible_colors:
                 self.spilled_nodes.append(node)
             else:
