@@ -1,4 +1,6 @@
-from typing import List, Set
+from typing import List, Set, Dict
+
+from dataclasses import dataclass
 
 from activation_records.temp import Temp
 from instruction_selection.assembly import Instruction, Operation, Move, Label
@@ -42,30 +44,53 @@ class AssemblerInformation:
         return set()
 
 
-def assembler_flow_graph(
-    instructions: List[Instruction],
-) -> Graph[AssemblerInformation]:
+@dataclass
+class FlowGraphResult:
+    flow_graph: Graph[AssemblerInformation]
+    temp_uses: Dict[Temp, List[Instruction]]
+    temp_definitions: Dict[Temp, List[Instruction]]
+
+
+def assembler_flow_graph(instructions: List[Instruction]) -> FlowGraphResult:
     graph = Graph[AssemblerInformation]()
+    temp_uses = {}
+    temp_definitions = {}
     label_nodes = {}
 
     # Node creation
     for instruction in instructions:
         node = graph.add_node(AssemblerInformation(instruction))
         if node.information.is_label():
-            label_nodes[node.information.label] = node
+            label_nodes[node.information.instruction.label] = node
+        for used_temp in node.information.uses:
+            if used_temp not in temp_uses:
+                temp_uses[used_temp] = []
+            temp_uses[used_temp].append(node.information.instruction)
+        for defined_temp in node.information.definitions:
+            if defined_temp not in temp_definitions:
+                temp_definitions[defined_temp] = []
+            temp_definitions[defined_temp].append(node.information.instruction)
 
     # Edge creation
     node_list = graph.get_nodes()
     for index, node in enumerate(node_list):
         if node.information.is_jump():
             for jump_label in node.information.instruction.jump:
-                graph.add_edge(node, label_nodes[jump_label])
+                # TODO: REMOVE THIS.
+                try:
+                    graph.add_edge(node, label_nodes[jump_label])
+                except KeyError:
+                    pass
         else:
             graph.add_edge(node, node_list[index + 1])
     last_node = node_list[-1]
     if last_node.information.is_jump():
         for jump_label in last_node.information.instruction.jump:
-            graph.add_edge(last_node, label_nodes[jump_label])
+            # TODO: REMOVE THIS.
+            try:
+                graph.add_edge(last_node, label_nodes[jump_label])
+            except KeyError:
+                pass
 
     # Liveness iteration
     continue_iteration = True
@@ -89,4 +114,4 @@ def assembler_flow_graph(
             ):
                 continue_iteration = True
 
-    return graph
+    return FlowGraphResult(graph, temp_uses, temp_definitions)
