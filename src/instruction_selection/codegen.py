@@ -232,11 +232,13 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
                 )
             )
             # R[%rdx]:R[%rax] <- SignExtend(R[%rax])
-            Codegen.emit(
-                Assembly.Operation(
-                    line="cqto\n", source=[rax], destination=[rdx], jump=None
+            # This is necessary only for the division, since it uses RDX:RAX as the dividend.
+            if expNode.operator == IRT.BinaryOperator.div:
+                Codegen.emit(
+                    Assembly.Operation(
+                        line="cqto\n", source=[rax], destination=[rdx], jump=None
+                    )
                 )
-            )
             Codegen.emit(
                 Assembly.Operation(
                     line=f"{convert_binary_operator(expNode.operator)} %'s2\n",
