@@ -337,7 +337,9 @@ def empty_expression() -> TranslatedExpression:
 def proc_entry_exit(function_level: RealLevel, body: TranslatedExpression):
     # TODO: The book also adds a formals: List[Access] argument. No idea why.
     body_statement = Move(Temporary(frame.return_value()), convert_to_expression(body))
-    proc_statement = frame.proc_entry_exit1(function_level.frame, body_statement)
+    proc_statement = frame.preserve_callee_registers(
+        function_level.frame, frame.shift_view(function_level.frame, body_statement)
+    )
     FragmentManager.add_fragment(ProcessFragment(proc_statement, function_level.frame))
 
 

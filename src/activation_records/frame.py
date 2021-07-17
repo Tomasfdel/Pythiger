@@ -78,7 +78,8 @@ def temp_to_str(temp: Temp) -> str:
     return f"t{temp}"
 
 
-# Access describes formals and locals stored in a frame or in registers.
+# Access describes formals and locals stored in a frame or in registers
+# as seen from the calee's perspective.
 class Access(ABC):
     pass
 
@@ -135,9 +136,12 @@ class Frame:
             access_list.append(InRegister(TempManager.new_temp()))
         return access_list[-1]
 
-    # Instructions required for "view shift".
+    # Instructions required for "view shift".272
 
     # Number of allocated locals so far.
+    # TODO: Where is this function needed?
+    def allocated_locals_count(self):
+        return len(self.local_variables)
 
 
 # This function is used by Translate to turn a Frame.Access into an IRT.Expression.
@@ -170,13 +174,53 @@ def external_call(
     return IRT.Call(IRT.Name(TempManager.named_label(function_name)), arguments)
 
 
-# This applies the view shift of calling a function, which is explained in Chapter 6.
-# Looks like this method is explained later, so we can use a dummy implementation
-# that just returns stm for now.
-# The implementation of this function will be discussed on page 267 (C book).
-# TODO: Find a better name.
-def proc_entry_exit1(frame: Frame, statement: IRT.Statement) -> IRT.Statement:
-    return statement
+# This applies the view shift of calling a function.
+# This means concatenating a sequence of IRT.Moves to the function body, where each move changes
+# a register parameter to the place from which it is seen from within the function.
+def shift_view(frame: Frame, function_body: IRT.Statement) -> IRT.Statement:
+    shift_parameters = []
+    for access, argument_register in zip(frame.formal_parameters, argument_registers):
+        # TODO: Cuando tengamos variables que no escapan, aca va un if para
+        # ver si el access es InRegister o InFrame.
+        shift_parameters.append(
+            IRT.Move(
+                IRT.Memory(
+                    IRT.BinaryOperation(
+                        IRT.BinaryOperator.plus,
+                        IRT.Temporary(frame_pointer()),
+                        IRT.Constant(access.offset),
+                    )
+                ),
+                IRT.Temporary(TempMap.register_to_temp[argument_register]),
+            )
+        )
+
+    return IRT.Sequence(shift_parameters + [function_body])
+
+
+# This preserves the callee_saved registers across a function call.
+# We need to make up new temporaries for each callee-save register. On entry, we move
+# all these registers to their new temporary locations, and on exit, we move them back.
+def preserve_callee_registers(
+    frame: Frame, function_body: IRT.Statement
+) -> IRT.Statement:
+    save_registers = []
+    restore_registers = []
+    for callee_register in callee_saved_registers:
+        temp = TempManager.new_temp()
+        save_registers.append(
+            IRT.Move(
+                IRT.Temporary(temp),
+                IRT.Temporary(TempMap.register_to_temp[callee_register]),
+            )
+        )
+        restore_registers.append(
+            IRT.Move(
+                IRT.Temporary(TempMap.register_to_temp[callee_register]),
+                IRT.Temporary(temp),
+            )
+        )
+    return IRT.Sequence(save_registers + [function_body] + restore_registers)
 
 
 # This function appends a “sink” instruction to the function body to tell the
