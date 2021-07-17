@@ -326,9 +326,9 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
     # arguments, which are evaluated left to right.
     elif isinstance(expNode, IRT.Call):
         # A CALL is expected to “trash” certain registers – the caller-save registers,
-        # the return-address register, and the return-value register. This list of
-        # calldefs should be listed as “destinations” of the CALL, so that the later
-        # phases of the compiler know that something happens to them here.
+        # and the return-value register. This list of calldefs should be listed as
+        # “destinations” of the CALL, so that the later phases of the compiler know
+        # that something happens to them here.
         calldefs = [
             Frame.TempMap.register_to_temp[register]
             for register in Frame.caller_saved_registers
