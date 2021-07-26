@@ -59,3 +59,10 @@ class Procedure:
     prologue: str
     body: List[Instruction]
     epilogue: str
+
+    def format(self, temp_map: Callable[[Temp], str]) -> str:
+        return (
+            self.prologue
+            + "".join([instruction.format(temp_map) for instruction in self.body])
+            + self.epilogue
+        )

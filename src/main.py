@@ -1,4 +1,4 @@
-from activation_records.frame import TempMap, temp_to_str
+from activation_records.frame import TempMap, temp_to_str, sink, assembly_procedure
 from activation_records.instruction_removal import is_redundant_move
 from canonical.canonize import canonize
 from intermediate_representation.fragment import FragmentManager, ProcessFragment
@@ -56,7 +56,8 @@ def main():
     print("Process fragment amount:", len(canonized_bodies))
 
     # Register Allocation
-    for body, fragment in zip(assembly_bodies, process_fragments):
+    bodies_with_sink = [sink(assembly_body) for assembly_body in assembly_bodies]
+    for body, fragment in zip(bodies_with_sink, process_fragments):
         allocation_result = RegisterAllocator(fragment.frame).main(body)
         TempMap.update_temp_to_register(allocation_result.temp_to_register)
         instruction_list = [
@@ -64,8 +65,8 @@ def main():
             for instruction in allocation_result.instructions
             if not is_redundant_move(instruction)
         ]
-        for instruction in instruction_list:
-            print(instruction.format(temp_to_str))
+        procedure = assembly_procedure(fragment.frame, instruction_list)
+        print(procedure.format(temp_to_str))
         print("*" * 5)
 
 
