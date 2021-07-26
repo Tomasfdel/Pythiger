@@ -283,10 +283,13 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
     elif isinstance(expNode, IRT.Memory):
         temp = Temp.TempManager.new_temp()
         Codegen.emit(
-            Assembly.Move(
+            # This is an Operation and not a Move, since it should not be deleted if src and
+            # dst are the same (they're not really the same, the source is a memory location).
+            Assembly.Operation(
                 line="movq (%'s0), %'d0\n",
                 source=[munch_expression(expNode.expression)],
                 destination=[temp],
+                jump=None,
             )
         )
         return temp
