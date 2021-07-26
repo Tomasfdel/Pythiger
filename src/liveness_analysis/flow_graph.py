@@ -73,7 +73,8 @@ def assembler_flow_graph(instructions: List[Instruction]) -> FlowGraphResult:
 
     # Edge creation
     node_list = graph.get_nodes()
-    for index, node in enumerate(node_list):
+    # TODO: El [:-1] fue un fix que vimos por arriba. Chequear si esta bien.
+    for index, node in enumerate(node_list[:-1]):
         if node.information.is_jump():
             for jump_label in node.information.instruction.jump:
                 # TODO: REMOVE THIS once we figure out what to do with the done_label
