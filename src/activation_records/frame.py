@@ -115,11 +115,17 @@ class Frame:
         # [Access] denoting the locations where the formal parameters will be
         # kept at run time, as seen from inside the callee.
         self.formal_parameters = []
-        # [Access] denoting the locations where the local variables will be
-        # kept at run time, as seen from inside the callee.
         self.local_variables = []
-        for escape in formal_escapes:
+
+        # Process the parameters passed by registers.
+        for escape in formal_escapes[: len(argument_registers)]:
             self._alloc_single_var(escape, self.formal_parameters)
+
+        # Process the extra parameters (stored in the previous frame).
+        extra_argument_offset = 16
+        for escape in formal_escapes[len(argument_registers) :]:
+            self.formal_parameters.append(InFrame(extra_argument_offset))
+            extra_argument_offset += word_size
 
     # Allocates a new local variable in the frame. The "escape"
     # variable indicates whether the variable escapes or not.
@@ -264,19 +270,24 @@ def assembly_procedure(
 
     prologue += "movq %rsp, %rbp\n"  # rbp <- rsp
     prologue += "subq $8, %rbp\n"  # rbp -= 8
-    # TODO: This does not consider more than 6 parameters per function.
-    # There is no space on the stack to pass parameters to functions called inside this frame.
-
     # The amount of stack space necessary for formal parameters and local variables
     # is equal to word_size * amount of InFrames.
     # Each time an InFrame is created, frame.offset decreases by word_size.
-    prologue += (
-        f"addq ${frame.offset}, %rsp\n"  # frame.offset is a non-positive number.
-    )
+    # TODO: The amount of stack space necessary for outgoing parameters cannot be
+    # calculated except maybe in translate (we need the maximum amount of outgoing
+    # arguments in a call inside the function body).
+    # That's why (for now?) we're reserving space for the outgoing arguments in
+    # codegen (specifically when munching IRT.Call) and here we only care about
+    # formal parameters and local variables.
+    # Align the stack_size to 16 bytes.
+    stack_size = -(frame.offset % -16) # frame.offset is a non-positive number.
+    prologue += f"subq ${stack_size}, %rsp\n"
 
     # Epilogue
-    epilogue = f"subq ${frame.offset}, %rsp\n"  # frame.offset is a non-positive number.
-    epilogue += "popq %rbp\n" # Restore rbp (first argument that's always saved InFrame).
+    epilogue = f"addq ${stack_size}, %rsp\n"
+    epilogue += (
+        "popq %rbp\n"  # Restore rbp (first argument that's always saved InFrame).
+    )
     epilogue += "ret\n"
     epilogue += f"# END {frame.name}\n"
 

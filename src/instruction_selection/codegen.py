@@ -158,13 +158,15 @@ def munch_arguments(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
         )
         temp_list.append(register_temp)
 
-    # Push the remaining arguments to the stack (if any).
+    # Put the remaining arguments in the stack (if any).
+    rsp = Frame.TempMap.register_to_temp['rsp']
     for index in range(len(Frame.argument_registers), len(arg_list)):
+        offset = Frame.word_size * (index - len(Frame.argument_registers))
         Codegen.emit(
             Assembly.Operation(
-                line="pushq %'s0\n",
+                line=f"movq %'s0, {offset}(%'d0)\n",
                 source=[munch_expression(arg_list[index])],
-                destination=[],
+                destination=[rsp],
                 jump=None,
             )
         )
@@ -340,6 +342,19 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
         ]
 
         if isinstance(expNode.function, IRT.Name):
+            # Reserve space in the stack for extra arguments.
+            rsp = Frame.TempMap.register_to_temp['rsp']
+            stack_arguments_size = Frame.word_size * (len(expNode.arguments) - len(Frame.argument_registers))
+            if stack_arguments_size > 0:
+                Codegen.emit(
+                    Assembly.Operation(
+                        line=f"subq ${stack_arguments_size}, %'d0\n",
+                        source=[rsp],
+                        destination=[rsp],
+                        jump=None,
+                    )
+                )
+
             Codegen.emit(
                 Assembly.Operation(
                     line=f"call {expNode.function.label}\n",
@@ -348,6 +363,18 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
                     jump=None,
                 )
             )
+        
+            # Restore the stack pointer (deallocate the space reserved earlier).
+            if stack_arguments_size > 0:
+                Codegen.emit(
+                    Assembly.Operation(
+                        line=f"addq ${stack_arguments_size}, %'d0\n",
+                        source=[rsp],
+                        destination=[rsp],
+                        jump=None,
+                    )
+                )
+
 
         else:
             raise Exception("Found a IRT.Call where function is not an IRT.Name.")
