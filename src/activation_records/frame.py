@@ -3,9 +3,10 @@ from typing import List, Dict
 from dataclasses import dataclass
 
 from abc import ABC
-from activation_records.temp import Temp, TempLabel, TempManager
 import intermediate_representation.tree as IRT
 import instruction_selection.assembly as Assembly
+
+from activation_records.temp import Temp, TempLabel, TempManager
 
 # Constant for the machine's word size.
 word_size = 8
@@ -98,7 +99,6 @@ class InRegister(Access):
 
 # Frame is the class responsible for:
 # * the locations of all the formals.
-# * instructions required to implement the "view shift".
 # * the number of locals allocated so far.
 # * the label at which the function's machine code is to begin.
 class Frame:
@@ -130,18 +130,11 @@ class Frame:
     # to access_list.
     def _alloc_single_var(self, escape: bool, access_list: List[Access]) -> Access:
         if escape:
-            self.offset -= word_size
             access_list.append(InFrame(self.offset))
+            self.offset -= word_size
         else:
             access_list.append(InRegister(TempManager.new_temp()))
         return access_list[-1]
-
-    # Instructions required for "view shift".272
-
-    # Number of allocated locals so far.
-    # TODO: Where is this function needed?
-    def allocated_locals_count(self):
-        return len(self.local_variables)
 
 
 # This function is used by Translate to turn a Frame.Access into an IRT.Expression.
@@ -175,25 +168,32 @@ def external_call(
 
 
 # This applies the view shift of calling a function.
-# This means concatenating a sequence of IRT.Moves to the function body, where each move changes
-# a register parameter to the place from which it is seen from within the function.
+# This means concatenating a sequence of IRT.Moves to the function
+# body, where each move changes a register parameter to the place
+# from which it is seen from within the function.
 def shift_view(frame: Frame, function_body: IRT.Statement) -> IRT.Statement:
     shift_parameters = []
     for access, argument_register in zip(frame.formal_parameters, argument_registers):
-        # TODO: Cuando tengamos variables que no escapan, aca va un if para
-        # ver si el access es InRegister o InFrame.
-        shift_parameters.append(
-            IRT.Move(
-                IRT.Memory(
-                    IRT.BinaryOperation(
-                        IRT.BinaryOperator.plus,
-                        IRT.Temporary(frame_pointer()),
-                        IRT.Constant(access.offset),
-                    )
-                ),
-                IRT.Temporary(TempMap.register_to_temp[argument_register]),
+        if isinstance(access, InFrame):
+            shift_parameters.append(
+                IRT.Move(
+                    IRT.Memory(
+                        IRT.BinaryOperation(
+                            IRT.BinaryOperator.plus,
+                            IRT.Temporary(frame_pointer()),
+                            IRT.Constant(access.offset),
+                        )
+                    ),
+                    IRT.Temporary(TempMap.register_to_temp[argument_register]),
+                )
             )
-        )
+        else:
+            shift_parameters.append(
+                IRT.Move(
+                    IRT.Temporary(access.register),
+                    IRT.Temporary(TempMap.register_to_temp[argument_register]),
+                )
+            )
 
     return IRT.Sequence(shift_parameters + [function_body])
 
@@ -227,18 +227,62 @@ def preserve_callee_registers(
 # register allocator that certain registers are live at procedure exit.
 def sink(function_body: List[Assembly.Instruction]) -> List[Assembly.Instruction]:
     # TODO: Check if rax needs to be in this list.
-    sink_registers = callee_saved_registers + ["rsp"]
+    sink_registers = callee_saved_registers + ["rsp", "rip"]
     sink_temps = [TempMap.register_to_temp[register] for register in sink_registers]
-    function_body.append(Assembly.Operation(line="", src=sink_temps, dst=[], jump=None))
+    function_body.append(
+        Assembly.Operation(line="", source=sink_temps, destination=[], jump=None)
+    )
     return function_body
 
 
 # TODO: Find a better name.
-def proc_entry_exit3(
+def assembly_procedure(
     frame: Frame, body: List[Assembly.Instruction]
 ) -> Assembly.Procedure:
-    # TODO: This is a scaffold version, as Appel calls it.
-    # It will be implemented for real in page 269 (niCe book).
-    return Assembly.Procedure(
-        prologue=f"PROCEDURE {frame.name}\n", body=body, epilogue=f"END {frame.name}\n"
+    # Prologue
+    prologue = f"# PROCEDURE {frame.name}\n"
+    prologue += f"{frame.name}:\n"
+
+    # After the call instruction the stack looks like this:
+    # *       ...        *
+    # *      arg 7       *<- %rsp + 8
+    # *   ------------   *
+    # * return  adddress *<- %rsp
+    # *   static link    *<- %rsp - 8
+    # *     local 1      *<- %rsp - 16
+    # *       ...        *<- %rsp - 24
+
+    # After the prologue, it should look like this:
+    # *       ...        *
+    # *      arg 7       *<- %rbp + 16
+    # *   ------------   *
+    # * return  adddress *<- %rbp + 8
+    # *   static link    *<- %rbp
+    # *     local 1      *<- %rbp - 8
+    # *       ...        *<- %rbp - 16
+    # *     local n      *<- %rsp
+
+    prologue += "movq %rsp, %rbp\n"  # rbp <- rsp
+    prologue += "subq $8, %rbp\n"  # rbp -= 8
+    # TODO: This does not consider more than 6 parameters per function.
+    # There is no space on the stack to pass parameters to functions called inside this frame.
+
+    # The amount of stack space necessary for formal parameters and local variables
+    # is equal to word_size * amount of InFrames.
+    # Each time an InFrame is created, frame.offset decreases by word_size.
+    prologue += (
+        f"addq ${frame.offset}, %rsp\n"  # frame.offset is a non-positive number.
     )
+
+    # Epilogue
+    epilogue = f"subq ${frame.offset}, %rsp\n"  # frame.offset is a non-positive number.
+    epilogue += "popq %rbp\n" # Restore rbp (first argument that's always saved InFrame).
+    epilogue += "ret\n"
+    epilogue += f"# END {frame.name}\n"
+
+    return Assembly.Procedure(prologue, body, epilogue)
+
+
+def string(label: TempLabel, string: str) -> str:
+    # TODO: Do we use .asciz or .string?
+    return f"{label}:\n\t.asciz {string}\n"
