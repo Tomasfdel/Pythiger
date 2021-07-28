@@ -77,5 +77,6 @@ def fix_jumps(statement_lists: List[List[Statement]]):
 
 def trace_schedule(block: BasicBlock) -> List[Statement]:
     reordered_blocks = reorder_blocks(block.statement_lists)
+    reordered_blocks.append([Label(block.label)])
     fix_jumps(reordered_blocks)
     return [statement for block in reordered_blocks for statement in block]

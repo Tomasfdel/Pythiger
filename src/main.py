@@ -1,7 +1,17 @@
-from activation_records.frame import TempMap, temp_to_str, sink, assembly_procedure
+from activation_records.frame import (
+    TempMap,
+    temp_to_str,
+    sink,
+    assembly_procedure,
+    string,
+)
 from activation_records.instruction_removal import is_redundant_move
 from canonical.canonize import canonize
-from intermediate_representation.fragment import FragmentManager, ProcessFragment
+from intermediate_representation.fragment import (
+    FragmentManager,
+    ProcessFragment,
+    StringFragment,
+)
 from register_allocation.allocation import RegisterAllocator
 from semantic_analysis.analyzers import SemanticError, translate_program
 from instruction_selection.codegen import Codegen
@@ -39,13 +49,17 @@ def main():
         return
 
     # Canonization
-    process_fragments = [
-        fragment
-        for fragment in FragmentManager.get_fragments()
-        if isinstance(fragment, ProcessFragment)
-    ]
-    canonized_bodies = [canonize(fragment.body) for fragment in process_fragments]
+    process_fragments = []
+    string_fragments = []
 
+    for fragment in FragmentManager.get_fragments():
+        if isinstance(fragment, ProcessFragment):
+            process_fragments.append(fragment)
+
+        elif isinstance(fragment, StringFragment):
+            string_fragments.append(fragment)
+
+    canonized_bodies = [canonize(fragment.body) for fragment in process_fragments]
     # Instruction Selection
     assembly_bodies = [
         Codegen.codegen(process_body) for process_body in canonized_bodies
@@ -54,6 +68,13 @@ def main():
     print("All good!")
     print(analysed_program.type)
     print("Process fragment amount:", len(canonized_bodies))
+
+    print(".section .rodata\n")
+    # imprimir los string fragments
+    for string_fragment in string_fragments:
+        print(string(string_fragment.label, string_fragment.string))
+    print()
+    print(".text\n.global lab_1\n.type lab_1, @function\n\n")
 
     # Register Allocation
     bodies_with_sink = [sink(assembly_body) for assembly_body in assembly_bodies]
@@ -67,7 +88,6 @@ def main():
         ]
         procedure = assembly_procedure(fragment.frame, instruction_list)
         print(procedure.format(temp_to_str))
-        print("*" * 5)
 
 
 if __name__ == "__main__":

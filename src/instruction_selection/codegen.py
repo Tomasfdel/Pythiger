@@ -159,7 +159,7 @@ def munch_arguments(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
         temp_list.append(register_temp)
 
     # Put the remaining arguments in the stack (if any).
-    rsp = Frame.TempMap.register_to_temp['rsp']
+    rsp = Frame.TempMap.register_to_temp["rsp"]
     for index in range(len(Frame.argument_registers), len(arg_list)):
         offset = Frame.word_size * (index - len(Frame.argument_registers))
         Codegen.emit(
@@ -343,8 +343,10 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
 
         if isinstance(expNode.function, IRT.Name):
             # Reserve space in the stack for extra arguments.
-            rsp = Frame.TempMap.register_to_temp['rsp']
-            stack_arguments_size = Frame.word_size * (len(expNode.arguments) - len(Frame.argument_registers))
+            rsp = Frame.TempMap.register_to_temp["rsp"]
+            stack_arguments_size = Frame.word_size * (
+                len(expNode.arguments) - len(Frame.argument_registers)
+            )
             if stack_arguments_size > 0:
                 Codegen.emit(
                     Assembly.Operation(
@@ -363,7 +365,7 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
                     jump=None,
                 )
             )
-        
+
             # Restore the stack pointer (deallocate the space reserved earlier).
             if stack_arguments_size > 0:
                 Codegen.emit(
@@ -374,7 +376,6 @@ def munch_expression(expNode: IRT.Expression) -> Temp.Temp:
                         jump=None,
                     )
                 )
-
 
         else:
             raise Exception("Found a IRT.Call where function is not an IRT.Name.")

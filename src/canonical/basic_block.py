@@ -12,7 +12,6 @@ from intermediate_representation.tree import (
 )
 
 
-# TODO: The done label in this structure may not be needed.
 @dataclass
 class BasicBlock:
     label: TempLabel
@@ -52,5 +51,4 @@ def basic_block(statements: List[Statement]) -> BasicBlock:
             statement_lists[index] = statement_list + [
                 Jump(Name(next_block_label.label), [next_block_label.label])
             ]
-
     return BasicBlock(done_label, statement_lists)
