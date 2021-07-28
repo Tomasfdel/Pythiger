@@ -280,11 +280,15 @@ def assembly_procedure(
     # codegen (specifically when munching IRT.Call) and here we only care about
     # formal parameters and local variables.
     # Align the stack_size to 16 bytes.
-    stack_size = -(frame.offset % -16) # frame.offset is a non-positive number.
-    prologue += f"subq ${stack_size}, %rsp\n"
 
+    stack_size = -frame.offset - (
+        frame.offset % -16
+    )  # frame.offset is a non-positive number.
+    prologue += f"subq ${stack_size}, %rsp\n"
+    prologue += "\n\n"
     # Epilogue
-    epilogue = f"addq ${stack_size}, %rsp\n"
+    epilogue = "\n\n"
+    epilogue += f"addq ${stack_size}, %rsp\n"
     epilogue += (
         "popq %rbp\n"  # Restore rbp (first argument that's always saved InFrame).
     )
