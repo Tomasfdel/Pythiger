@@ -282,9 +282,11 @@ def assembly_procedure(
     prologue += "\n\n"
     # Epilogue
     epilogue = "\n\n"
-    epilogue += f"addq ${stack_size}, %rsp\n"
+    # Move rsp to where the static link is pointed.
+    # (first argument that's always saved InFrame)
+    epilogue += f"addq ${stack_size - 8}, %rsp\n"
     epilogue += (
-        "popq %rbp\n"  # Restore rbp (first argument that's always saved InFrame).
+        "popq %rbp\n"  # Restore rbp (static link).
     )
     epilogue += "ret\n"
     epilogue += f"# END {frame.name}\n"
