@@ -4,7 +4,7 @@ from typing import List
 from dataclasses import dataclass
 
 import activation_records.frame as frame
-from activation_records.temp import TempLabel, TempManager
+from activation_records.temp import TempLabel
 
 
 class Level(ABC):
@@ -42,4 +42,4 @@ outermost_level = OutermostLevel()
 
 
 def base_program_level() -> RealLevel:
-    return RealLevel(outermost_level, TempManager.new_label(), [])
+    return RealLevel(outermost_level, "tigermain", [])

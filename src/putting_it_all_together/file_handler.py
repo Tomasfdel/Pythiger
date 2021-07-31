@@ -14,10 +14,9 @@ class FileHandler:
         self.file.write(".section .rodata\n")
 
     def print_code_header(self):
-        # TODO: Change lab_1 to main.
         self.file.write("\n.text\n")
-        self.file.write(".global lab_1\n")
-        self.file.write(".type lab_1, @function\n\n")
+        self.file.write(".global tigermain\n")
+        self.file.write(".type tigermain, @function\n\n")
 
     def print_string_fragment(self, string_fragment: StringFragment):
         self.file.write(string_literal(string_fragment.label, string_fragment.string))
