@@ -77,23 +77,13 @@ def assembler_flow_graph(instructions: List[Instruction]) -> FlowGraphResult:
     for index, node in enumerate(node_list[:-1]):
         if node.information.is_jump():
             for jump_label in node.information.instruction.jump:
-                # TODO: REMOVE THIS once we figure out what to do with the done_label
-                #  from basic_block.
-                try:
-                    graph.add_edge(node, label_nodes[jump_label])
-                except KeyError:
-                    pass
+                graph.add_edge(node, label_nodes[jump_label])
         else:
             graph.add_edge(node, node_list[index + 1])
     last_node = node_list[-1]
     if last_node.information.is_jump():
         for jump_label in last_node.information.instruction.jump:
-            # TODO: REMOVE THIS once we figure out what to do with the done_label
-            #  from basic_block.
-            try:
-                graph.add_edge(last_node, label_nodes[jump_label])
-            except KeyError:
-                pass
+            graph.add_edge(last_node, label_nodes[jump_label])
 
     # Liveness iteration
     continue_iteration = True

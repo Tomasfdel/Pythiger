@@ -1,4 +1,4 @@
-from typing import List, Set, Dict, Tuple
+from typing import List, Set, Dict, Tuple, TypeVar
 
 from dataclasses import dataclass
 
@@ -9,6 +9,9 @@ from instruction_selection.assembly import Instruction, Move, Operation
 from liveness_analysis.flow_graph import assembler_flow_graph
 from liveness_analysis.graph import Graph
 from liveness_analysis.liveness import liveness
+
+
+T = TypeVar("T")
 
 
 @dataclass
@@ -153,7 +156,7 @@ class RegisterAllocator:
         self.node_degree[node] = self.node_degree[node] - 1
         if self.node_degree[node] == self.color_amount - 1:
             self._enable_moves([node] + self._adjacent(node))
-            self.spill_worklist.remove(node)
+            self._maybe_remove_from_list(self.spill_worklist, node)
             if self._move_related(node):
                 self.freeze_worklist.append(node)
             else:
@@ -285,8 +288,7 @@ class RegisterAllocator:
                     or self._get_alias(adjacent_node) in self.precolored
                 ):
                     adjacent_node_color = self.color[self._get_alias(adjacent_node)]
-                    if adjacent_node_color in possible_colors:
-                        possible_colors.remove(adjacent_node_color)
+                    self._maybe_remove_from_list(possible_colors, adjacent_node_color)
             if not possible_colors:
                 self.spilled_nodes.append(node)
             else:
@@ -331,3 +333,7 @@ class RegisterAllocator:
                 )
 
         return instructions
+
+    def _maybe_remove_from_list(self, list: List[T], element: T):
+        if element in list:
+            list.remove(element)
