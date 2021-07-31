@@ -65,12 +65,12 @@ def main():
     ]
 
     # TODO: Name option in runtime?
-    FileHandler("output.s")
-    FileHandler.print_data_header()
+    file_handler = FileHandler("output.s")
+    file_handler.print_data_header()
     for string_fragment in string_fragments:
-        FileHandler.print_string_fragment(string_fragment)
+        file_handler.print_string_fragment(string_fragment)
 
-    FileHandler.print_code_header()
+    file_handler.print_code_header()
     # Register Allocation
     bodies_with_sink = [sink(assembly_body) for assembly_body in assembly_bodies]
     for body, fragment in zip(bodies_with_sink, process_fragments):
@@ -82,7 +82,7 @@ def main():
             if not is_redundant_move(instruction)
         ]
         procedure = assembly_procedure(fragment.frame, instruction_list)
-        FileHandler.print_assembly_procedure(procedure)
+        file_handler.print_assembly_procedure(procedure)
 
 
 if __name__ == "__main__":
