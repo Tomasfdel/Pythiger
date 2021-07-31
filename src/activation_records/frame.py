@@ -241,7 +241,6 @@ def sink(function_body: List[Assembly.Instruction]) -> List[Assembly.Instruction
     return function_body
 
 
-# TODO: Find a better name.
 def assembly_procedure(
     frame: Frame, body: List[Assembly.Instruction]
 ) -> Assembly.Procedure:
@@ -270,20 +269,15 @@ def assembly_procedure(
 
     prologue += "movq %rsp, %rbp\n"  # rbp <- rsp
     prologue += "subq $8, %rbp\n"  # rbp -= 8
+
+    # Here stack space is reserved only for formal parameters and local variables.
+    # Stack space for outgoing arguments is reserved in codegen (when munching
+    # IRT.Call).
     # The amount of stack space necessary for formal parameters and local variables
     # is equal to word_size * amount of InFrames.
     # Each time an InFrame is created, frame.offset decreases by word_size.
-    # TODO: The amount of stack space necessary for outgoing parameters cannot be
-    # calculated except maybe in translate (we need the maximum amount of outgoing
-    # arguments in a call inside the function body).
-    # That's why (for now?) we're reserving space for the outgoing arguments in
-    # codegen (specifically when munching IRT.Call) and here we only care about
-    # formal parameters and local variables.
     # Align the stack_size to 16 bytes.
-
-    stack_size = -frame.offset - (
-        frame.offset % -16
-    )  # frame.offset is a non-positive number.
+    stack_size = -frame.offset - (frame.offset % -16)
     prologue += f"subq ${stack_size}, %rsp\n"
     prologue += "\n\n"
     # Epilogue
@@ -298,6 +292,6 @@ def assembly_procedure(
     return Assembly.Procedure(prologue, body, epilogue)
 
 
-def string(label: TempLabel, string: str) -> str:
+def string_literal(label: TempLabel, string: str) -> str:
     # TODO: Do we use .asciz or .string?
     return f"{label}:\n\t.asciz {string}\n"

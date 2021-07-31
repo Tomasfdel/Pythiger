@@ -1,9 +1,7 @@
 from activation_records.frame import (
     TempMap,
-    temp_to_str,
     sink,
     assembly_procedure,
-    string,
 )
 from activation_records.instruction_removal import is_redundant_move
 from canonical.canonize import canonize
@@ -15,6 +13,7 @@ from intermediate_representation.fragment import (
 from register_allocation.allocation import RegisterAllocator
 from semantic_analysis.analyzers import SemanticError, translate_program
 from instruction_selection.codegen import Codegen
+from putting_it_all_together.file_handler import FileHandler
 from lexer import lex as le
 from parser import parser as p
 import sys
@@ -41,7 +40,7 @@ def main():
     # Semantic Analysis and Intermediate Representation Translation
     TempMap.initialize()
     try:
-        analysed_program = translate_program(
+        translate_program(
             parsed_program,
         )
     except SemanticError as err:
@@ -65,17 +64,13 @@ def main():
         Codegen.codegen(process_body) for process_body in canonized_bodies
     ]
 
-    print("All good!")
-    print(analysed_program.type)
-    print("Process fragment amount:", len(canonized_bodies))
-
-    print(".section .rodata\n")
-    # imprimir los string fragments
+    # TODO: Name option in runtime?
+    FileHandler("output.s")
+    FileHandler.print_data_header()
     for string_fragment in string_fragments:
-        print(string(string_fragment.label, string_fragment.string))
-    print()
-    print(".text\n.global lab_1\n.type lab_1, @function\n\n")
+        FileHandler.print_string_fragment(string_fragment)
 
+    FileHandler.print_code_header()
     # Register Allocation
     bodies_with_sink = [sink(assembly_body) for assembly_body in assembly_bodies]
     for body, fragment in zip(bodies_with_sink, process_fragments):
@@ -87,7 +82,7 @@ def main():
             if not is_redundant_move(instruction)
         ]
         procedure = assembly_procedure(fragment.frame, instruction_list)
-        print(procedure.format(temp_to_str))
+        FileHandler.print_assembly_procedure(procedure)
 
 
 if __name__ == "__main__":
