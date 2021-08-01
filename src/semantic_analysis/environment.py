@@ -37,26 +37,61 @@ def base_type_environment() -> SymbolTable[Type]:
 
 def base_value_environment() -> SymbolTable[EnvironmentEntry]:
     environment = SymbolTable[EnvironmentEntry]()
-    environment.add("print", base_function_entry([StringType()], VoidType()))
-    environment.add("flush", base_function_entry([], VoidType()))
-    environment.add("getchar", base_function_entry([], StringType()))
-    environment.add("ord", base_function_entry([StringType()], IntType()))
-    environment.add("chr", base_function_entry([IntType()], StringType()))
-    environment.add("size", base_function_entry([StringType()], IntType()))
+    environment.add(
+        "print",
+        base_function_entry(
+            TempManager.named_label("print"), [StringType()], VoidType()
+        ),
+    )
+    environment.add(
+        "flush", base_function_entry(TempManager.named_label("flush"), [], VoidType())
+    )
+    environment.add(
+        "getchar",
+        base_function_entry(TempManager.named_label("getchar"), [], StringType()),
+    )
+    environment.add(
+        "ord",
+        base_function_entry(TempManager.named_label("ord"), [StringType()], IntType()),
+    )
+    environment.add(
+        "chr",
+        base_function_entry(TempManager.named_label("chr"), [IntType()], StringType()),
+    )
+    environment.add(
+        "size",
+        base_function_entry(TempManager.named_label("size"), [StringType()], IntType()),
+    )
     environment.add(
         "substring",
-        base_function_entry([StringType(), IntType(), IntType()], StringType()),
+        base_function_entry(
+            TempManager.named_label("substring"),
+            [StringType(), IntType(), IntType()],
+            StringType(),
+        ),
     )
     environment.add(
-        "concat", base_function_entry([StringType(), StringType()], StringType())
+        "concat",
+        base_function_entry(
+            TempManager.named_label("concat"),
+            [StringType(), StringType()],
+            StringType(),
+        ),
     )
-    environment.add("not", base_function_entry([IntType()], IntType()))
-    environment.add("exit", base_function_entry([IntType()], VoidType()))
+    environment.add(
+        "not",
+        base_function_entry(TempManager.named_label("not"), [IntType()], IntType()),
+    )
+    environment.add(
+        "exit",
+        base_function_entry(TempManager.named_label("exit"), [IntType()], VoidType()),
+    )
     return environment
 
 
-def base_function_entry(formal_types: List[Type], return_type: Type) -> FunctionEntry:
-    function_label = TempManager.new_label()
+def base_function_entry(
+    function_label: str, formal_types: List[Type], return_type: Type
+) -> FunctionEntry:
     function_level = RealLevel(
         outermost_level, function_label, [False for _ in formal_types]
     )
