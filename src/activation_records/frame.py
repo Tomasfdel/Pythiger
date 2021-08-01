@@ -136,8 +136,8 @@ class Frame:
     # to access_list.
     def _alloc_single_var(self, escape: bool, access_list: List[Access]) -> Access:
         if escape:
-            access_list.append(InFrame(self.offset))
             self.offset -= word_size
+            access_list.append(InFrame(self.offset))
         else:
             access_list.append(InRegister(TempManager.new_temp()))
         return access_list[-1]
@@ -253,22 +253,23 @@ def assembly_procedure(
     # *      arg 7       *<- %rsp + 8
     # *   ------------   *
     # * return  adddress *<- %rsp
-    # *   static link    *<- %rsp - 8
-    # *     local 1      *<- %rsp - 16
+    # *       🚮         *<- %rsp - 8
+    # *       🚮         *<- %rsp - 16
     # *       ...        *<- %rsp - 24
 
     # After the prologue, it should look like this:
+    # (the locals aren't stored yet, but the space is reserved)
     # *       ...        *
     # *      arg 7       *<- %rbp + 16
     # *   ------------   *
     # * return  adddress *<- %rbp + 8
-    # *   static link    *<- %rbp
-    # *     local 1      *<- %rbp - 8
+    # *   previous rbp   *<- %rbp
+    # *   local 1 (sl)   *<- %rbp - 8
     # *       ...        *<- %rbp - 16
     # *     local n      *<- %rsp
 
-    prologue += "movq %rsp, %rbp\n"  # rbp <- rsp
-    prologue += "subq $8, %rbp\n"  # rbp -= 8
+    prologue += "pushq %rbp\n"  # push rbp onto the stack
+    prologue += "movq %rsp, %rbp\n"  # rbp <- rsp, now rbp points to the old rbp
 
     # Here stack space is reserved only for formal parameters and local variables.
     # Stack space for outgoing arguments is reserved in codegen (when munching
@@ -282,12 +283,9 @@ def assembly_procedure(
     prologue += "\n\n"
     # Epilogue
     epilogue = "\n\n"
-    # Move rsp to where the static link is pointed.
-    # (first argument that's always saved InFrame)
-    epilogue += f"addq ${stack_size - 8}, %rsp\n"
-    epilogue += (
-        "popq %rbp\n"  # Restore rbp (static link).
-    )
+    # Move rsp to where the old rbp value was stored.
+    epilogue += "movq %rbp, %rsp\n"
+    epilogue += "popq %rbp\n"  # Restore old rbp value.
     epilogue += "ret\n"
     epilogue += f"# END {frame.name}\n"
 
