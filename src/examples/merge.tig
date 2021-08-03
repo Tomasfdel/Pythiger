@@ -1,19 +1,19 @@
-let 
+let
 
  type any = {any : int}
- var buffer := getchar()
+ var buffer := read_char()
 
 function readint(any: any) : int =
  let var i := 0
-     function isdigit(s : string) : int = 
-		  ord(buffer)>=ord("0") & ord(buffer)<=ord("9")
+     function isdigit(s : string) : int =
+		  char_to_num(buffer)>=char_to_num("0") & char_to_num(buffer)<=char_to_num("9")
      function skipto() =
        while buffer=" " | buffer="\n"
-         do buffer := getchar()
+         do buffer := read_char()
   in skipto();
      any.any := isdigit(buffer);
      while isdigit(buffer)
-       do (i := i*10+ord(buffer)-ord("0"); buffer := getchar());
+       do (i := i*10+char_to_num(buffer)-char_to_num("0"); buffer := read_char());
      i
  end
 
@@ -30,24 +30,24 @@ function readint(any: any) : int =
  function merge(a: list, b: list) : list =
    if a=nil then b
    else if b=nil then a
-   else if a.first < b.first 
+   else if a.first < b.first
       then list{first=a.first,rest=merge(a.rest,b)}
       else list{first=b.first,rest=merge(a,b.rest)}
 
  function printint(i: int) =
-  let function f(i:int) = if i>0 
-	     then (f(i/10); print(chr(i-i/10*10+ord("0"))))
-   in if i<0 then (print("-"); f(-i))
+  let function f(i:int) = if i>0
+	     then (f(i/10); print_string(num_to_char(i-i/10*10+char_to_num("0"))))
+   in if i<0 then (print_string("-"); f(-i))
       else if i>0 then f(i)
-      else print("0")
+      else print_string("0")
   end
 
  function printlist(l: list) =
-   if l=nil then print("\n")
-   else (printint(l.first); print(" "); printlist(l.rest))
+   if l=nil then print_string("\n")
+   else (printint(l.first); print_string(" "); printlist(l.rest))
 
    var list1 := readlist()
-   var list2 := (buffer:=getchar(); readlist())
+   var list2 := (buffer:=read_char(); readlist())
 
 
   /* BODY OF MAIN PROGRAM */
