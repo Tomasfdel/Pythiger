@@ -76,12 +76,14 @@ def munch_statement(stmNode: IRT.Statement) -> None:
     elif isinstance(stmNode, IRT.ConditionalJump):
         # The jump itself checks the flags in the EFL register.
         # These are usually set with TEST or CMP.
+        # We swap the order of the expressions to match AT&T syntax's
+        # order of operands.
         Codegen.emit(
             Assembly.Operation(
                 line="cmpq %'s0, %'s1\n",
                 source=[
-                    munch_expression(stmNode.left),
                     munch_expression(stmNode.right),
+                    munch_expression(stmNode.left),
                 ],
                 destination=[],
                 jump=None,
