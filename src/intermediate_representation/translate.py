@@ -156,7 +156,7 @@ def string_conditional_operation_expression(
     jump_expression = ConditionalJump(
         convert_conditional_operator(operator),
         frame.external_call(
-            "stringCompare", [convert_to_expression(left), convert_to_expression(right)]
+            "string_compare", [convert_to_expression(left), convert_to_expression(right)]
         ),
         Constant(0),
     )
@@ -169,7 +169,7 @@ def record_expression(field_list: List[TranslatedExpression]) -> TranslatedExpre
         Move(
             Temporary(result),
             frame.external_call(
-                "initRecord", [Constant(len(field_list) * frame.word_size)]
+                "init_record", [Constant(len(field_list) * frame.word_size)]
             ),
         )
     ]
@@ -328,7 +328,7 @@ def array_expression(
 ) -> TranslatedExpression:
     return Expression(
         frame.external_call(
-            "initArray",
+            "init_array",
             [convert_to_expression(size), convert_to_expression(initial_value)],
         )
     )

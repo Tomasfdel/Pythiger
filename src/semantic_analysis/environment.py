@@ -1,4 +1,5 @@
 from abc import ABC
+from src.intermediate_representation.fragment import StringFragment
 from typing import List
 
 from dataclasses import dataclass
@@ -32,17 +33,21 @@ class BaseEnvironmentManager:
 
     # Name of every standard library function, along with its argument and return types.
     standard_library_functions = {
-        "print": ([StringType()], VoidType()),
-        "printi": ([IntType()], VoidType()),
+        "char_to_num": ([StringType()], IntType()),
+        "exit_program": ([IntType()], VoidType()),
         "flush": ([], VoidType()),
-        "getchar": ([], StringType()),
-        "ord": ([StringType()], IntType()),
-        "chr": ([IntType()], StringType()),
-        "size": ([StringType()], IntType()),
-        "substring": ([StringType(), IntType(), IntType()], StringType()),
-        "concat": ([StringType(), StringType()], StringType()),
         "not": ([IntType()], IntType()),
-        "exit": ([IntType()], VoidType()),
+        "num_to_char": ([IntType()], StringType()),
+        "print_char": ([StringType()], VoidType()),
+        "print_num": ([IntType()], VoidType()),
+        "print_string": ([StringType()], VoidType()),
+        "read_char": ([], StringType()),
+        "read_num": ([], IntType()),
+        "string_compare": ([StringType(), StringType()], IntType()),
+        "string_concat": ([StringType(), StringType()], StringType()),
+        "string_equal": ([StringType(), StringType()], IntType()),
+        "string_length": ([StringType()], IntType()),
+        "string_substring": ([StringType(), IntType(), IntType()], StringType()),
     }
 
     @classmethod
