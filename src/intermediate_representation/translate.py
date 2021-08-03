@@ -156,7 +156,8 @@ def string_conditional_operation_expression(
     jump_expression = ConditionalJump(
         convert_conditional_operator(operator),
         frame.external_call(
-            "string_compare", [convert_to_expression(left), convert_to_expression(right)]
+            "string_compare",
+            [convert_to_expression(left), convert_to_expression(right)],
         ),
         Constant(0),
     )
@@ -252,7 +253,7 @@ def while_expression(
         [
             Label(test_label),
             ConditionalJump(
-                RelationalOperator.eq,
+                RelationalOperator.ne,
                 convert_to_expression(test),
                 Constant(0),
                 body_label,
