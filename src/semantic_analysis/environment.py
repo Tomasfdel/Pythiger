@@ -28,71 +28,48 @@ class FunctionEntry(EnvironmentEntry):
     result: Type
 
 
-def base_type_environment() -> SymbolTable[Type]:
-    environment = SymbolTable[Type]()
-    environment.add("int", IntType())
-    environment.add("string", StringType())
-    return environment
+class BaseEnvironmentManager:
 
+    # Name of every standard library function, along with its argument and return types.
+    standard_library_functions = {
+        "print": ([StringType()], VoidType()),
+        "printi": ([IntType()], VoidType()),
+        "flush": ([], VoidType()),
+        "getchar": ([], StringType()),
+        "ord": ([StringType()], IntType()),
+        "chr": ([IntType()], StringType()),
+        "size": ([StringType()], IntType()),
+        "substring": ([StringType(), IntType(), IntType()], StringType()),
+        "concat": ([StringType(), StringType()], StringType()),
+        "not": ([IntType()], IntType()),
+        "exit": ([IntType()], VoidType()),
+    }
 
-def base_value_environment() -> SymbolTable[EnvironmentEntry]:
-    environment = SymbolTable[EnvironmentEntry]()
-    environment.add(
-        "print",
-        base_function_entry(
-            TempManager.named_label("print"), [StringType()], VoidType()
-        ),
-    )
-    environment.add(
-        "flush", base_function_entry(TempManager.named_label("flush"), [], VoidType())
-    )
-    environment.add(
-        "getchar",
-        base_function_entry(TempManager.named_label("getchar"), [], StringType()),
-    )
-    environment.add(
-        "ord",
-        base_function_entry(TempManager.named_label("ord"), [StringType()], IntType()),
-    )
-    environment.add(
-        "chr",
-        base_function_entry(TempManager.named_label("chr"), [IntType()], StringType()),
-    )
-    environment.add(
-        "size",
-        base_function_entry(TempManager.named_label("size"), [StringType()], IntType()),
-    )
-    environment.add(
-        "substring",
-        base_function_entry(
-            TempManager.named_label("substring"),
-            [StringType(), IntType(), IntType()],
-            StringType(),
-        ),
-    )
-    environment.add(
-        "concat",
-        base_function_entry(
-            TempManager.named_label("concat"),
-            [StringType(), StringType()],
-            StringType(),
-        ),
-    )
-    environment.add(
-        "not",
-        base_function_entry(TempManager.named_label("not"), [IntType()], IntType()),
-    )
-    environment.add(
-        "exit",
-        base_function_entry(TempManager.named_label("exit"), [IntType()], VoidType()),
-    )
-    return environment
+    @classmethod
+    def base_type_environment(cls) -> SymbolTable[Type]:
+        environment = SymbolTable[Type]()
+        environment.add("int", IntType())
+        environment.add("string", StringType())
+        return environment
 
+    @classmethod
+    def base_value_environment(cls) -> SymbolTable[EnvironmentEntry]:
+        environment = SymbolTable[EnvironmentEntry]()
+        for function_name in cls.standard_library_functions:
+            argument_types, return_type = cls.standard_library_functions[function_name]
+            environment.add(
+                function_name,
+                cls._base_function_entry(
+                    TempManager.named_label(function_name), argument_types, return_type
+                ),
+            )
+        return environment
 
-def base_function_entry(
-    function_label: str, formal_types: List[Type], return_type: Type
-) -> FunctionEntry:
-    function_level = RealLevel(
-        outermost_level, function_label, [False for _ in formal_types]
-    )
-    return FunctionEntry(function_level, function_label, formal_types, return_type)
+    @classmethod
+    def _base_function_entry(
+        cls, function_label: str, formal_types: List[Type], return_type: Type
+    ) -> FunctionEntry:
+        function_level = RealLevel(
+            outermost_level, function_label, [False for _ in formal_types]
+        )
+        return FunctionEntry(function_level, function_label, formal_types, return_type)

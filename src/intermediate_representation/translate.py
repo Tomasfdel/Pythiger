@@ -38,6 +38,7 @@ from intermediate_representation.tree import (
     StatementExpression,
     Call,
 )
+from semantic_analysis.environment import BaseEnvironmentManager
 
 
 def simple_variable(access: Access, level: Level) -> TranslatedExpression:
@@ -109,8 +110,11 @@ def call_expression(
     argument_expressions = [
         convert_to_expression(argument) for argument in argument_list
     ]
-    static_link_expression = Temporary(frame.frame_pointer())
 
+    if function_label in BaseEnvironmentManager.standard_library_functions:
+        return Expression(frame.external_call(function_label, argument_expressions))
+
+    static_link_expression = Temporary(frame.frame_pointer())
     current_level = caller_level
     while current_level is not function_level.parent:
         current_static_link = current_level.formals()[0]

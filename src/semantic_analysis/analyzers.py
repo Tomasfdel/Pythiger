@@ -15,8 +15,7 @@ from semantic_analysis.environment import (
     EnvironmentEntry,
     VariableEntry,
     FunctionEntry,
-    base_value_environment,
-    base_type_environment,
+    BaseEnvironmentManager,
 )
 from semantic_analysis.table import SymbolTable
 from semantic_analysis.types import (
@@ -113,8 +112,8 @@ def translate_program(program: ast.Expression) -> TypedExpression:
 
     program_level = base_program_level()
     translated_program = translate_expression(
-        base_value_environment(),
-        base_type_environment(),
+        BaseEnvironmentManager.base_value_environment(),
+        BaseEnvironmentManager.base_type_environment(),
         program_level,
         program,
         None,
