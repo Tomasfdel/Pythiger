@@ -1,5 +1,4 @@
 from abc import ABC
-from src.intermediate_representation.fragment import StringFragment
 from typing import List
 
 from dataclasses import dataclass
@@ -38,7 +37,6 @@ class BaseEnvironmentManager:
         "flush": ([], VoidType()),
         "not": ([IntType()], IntType()),
         "num_to_char": ([IntType()], StringType()),
-        "print_char": ([StringType()], VoidType()),
         "print_num": ([IntType()], VoidType()),
         "print_string": ([StringType()], VoidType()),
         "read_char": ([], StringType()),
