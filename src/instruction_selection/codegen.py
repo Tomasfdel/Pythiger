@@ -151,11 +151,10 @@ def munch_arguments(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
     for argument, register in zip(arg_list, Frame.argument_registers):
         register_temp = Frame.TempMap.register_to_temp[register]
         Codegen.emit(
-            Assembly.Operation(
+            Assembly.Move(
                 line="movq %'s0, %'d0\n",
                 source=[munch_expression(argument)],
                 destination=[register_temp],
-                jump=None,
             )
         )
         temp_list.append(register_temp)
@@ -166,9 +165,9 @@ def munch_arguments(arg_list: List[IRT.Expression]) -> List[Temp.Temp]:
         offset = Frame.word_size * (index - len(Frame.argument_registers))
         Codegen.emit(
             Assembly.Operation(
-                line=f"movq %'s0, {offset}(%'d0)\n",
-                source=[munch_expression(arg_list[index])],
-                destination=[rsp],
+                line=f"movq %'s0, {offset}(%'s1)\n",
+                source=[munch_expression(arg_list[index]), rsp],
+                destination=[],
                 jump=None,
             )
         )
