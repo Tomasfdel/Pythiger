@@ -1,3 +1,4 @@
+from activation_records.frame import TempMap
 from lexer import lex as le
 from parser import parser as p
 from ply import lex
@@ -15,4 +16,5 @@ def parse_program(file_name: str) -> ast.Expression:
 
 
 def semantic_analysis(file_name: str) -> TypedExpression:
+    TempMap.initialize()
     return translate_program(parse_program(file_name))
