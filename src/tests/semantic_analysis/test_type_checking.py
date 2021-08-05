@@ -9,23 +9,19 @@ from tests.utils.compilation_steps import semantic_analysis
 
 class TestTypeChecking(unittest.TestCase):
     def test_example_1(self):
-        self._assert_is_expected_array(self._type_check("test1.tig"), sem.IntType)
+        self._assert_is_expected_type(self._type_check("test1.tig"), sem.VoidType)
 
     def test_example_2(self):
-        self._assert_is_expected_array(self._type_check("test2.tig"), sem.IntType)
+        self._assert_is_expected_type(self._type_check("test2.tig"), sem.VoidType)
 
     def test_example_3(self):
-        self._assert_is_expected_record(
-            self._type_check("test3.tig"), [sem.StringType, sem.IntType]
-        )
+        self._assert_is_expected_type(self._type_check("test3.tig"), sem.VoidType)
 
     def test_example_4(self):
         self._assert_is_expected_type(self._type_check("test4.tig"), sem.IntType)
 
     def test_example_5(self):
-        self._assert_is_expected_record(
-            self._type_check("test5.tig"), [sem.IntType, sem.RecordType]
-        )
+        self._assert_is_expected_type(self._type_check("test5.tig"), sem.VoidType)
 
     def test_example_6(self):
         self._assert_is_expected_type(self._type_check("test6.tig"), sem.VoidType)
