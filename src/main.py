@@ -23,7 +23,7 @@ from ply import lex
 def main():
     if len(sys.argv) == 1:
         print("Fatal error. No input file detected.")
-        return
+        sys.exit(1)
 
     f = open(sys.argv[1], "r")
     data = f.read()
@@ -35,7 +35,7 @@ def main():
         parsed_program = p.parser.parse(data, le.lexer)
     except p.SyntacticError as err:
         print(err)
-        return
+        sys.exit(1)
 
     # Semantic Analysis and Intermediate Representation Translation
     TempMap.initialize()
@@ -45,7 +45,7 @@ def main():
         )
     except SemanticError as err:
         print(err)
-        return
+        sys.exit(1)
 
     # Canonization
     process_fragments = []
