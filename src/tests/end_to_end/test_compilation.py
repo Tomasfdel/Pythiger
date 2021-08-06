@@ -8,19 +8,19 @@ class TestCompilation(unittest.TestCase):
         self._remove_program()
 
     def test_example_1(self):
-        self._test_successful_execution("test1.tig", 0)
+        self._test_successful_execution("test1.tig", return_code=0)
 
     def test_example_2(self):
-        self._test_successful_execution("test2.tig", 0)
+        self._test_successful_execution("test2.tig", return_code=0)
 
     def test_example_3(self):
-        self._test_successful_execution("test3.tig", 0)
+        self._test_successful_execution("test3.tig", return_code=0)
 
     def test_example_4(self):
-        self._test_successful_execution("test4.tig", 0)
+        self._test_successful_execution("test4.tig", return_code=0)
 
     def test_example_5(self):
-        self._test_successful_execution("test5.tig", 0)
+        self._test_successful_execution("test5.tig", return_code=0)
 
     def test_example_6(self):
         self._test_segmentation_fault("test6.tig")
@@ -29,7 +29,7 @@ class TestCompilation(unittest.TestCase):
         self._test_segmentation_fault("test7.tig")
 
     def test_example_8(self):
-        self._test_successful_execution("test8.tig", 40)
+        self._test_successful_execution("test8.tig", return_code=40)
 
     def test_example_9(self):
         self._test_compilation_error("test9.tig")
@@ -41,7 +41,7 @@ class TestCompilation(unittest.TestCase):
         self._test_compilation_error("test11.tig")
 
     def test_example_12(self):
-        self._test_successful_execution("test12.tig", 0)
+        self._test_successful_execution("test12.tig", return_code=0)
 
     def test_example_13(self):
         self._test_compilation_error("test13.tig")
@@ -86,7 +86,7 @@ class TestCompilation(unittest.TestCase):
         self._test_compilation_error("test26.tig")
 
     def test_example_27(self):
-        self._test_successful_execution("test27.tig", 2)
+        self._test_successful_execution("test27.tig", return_code=2)
 
     def test_example_28(self):
         self._test_compilation_error("test28.tig")
@@ -95,7 +95,7 @@ class TestCompilation(unittest.TestCase):
         self._test_compilation_error("test29.tig")
 
     def test_example_30(self):
-        self._test_successful_execution("test30.tig", 0)
+        self._test_successful_execution("test30.tig", return_code=0)
 
     def test_example_31(self):
         self._test_compilation_error("test31.tig")
@@ -116,7 +116,7 @@ class TestCompilation(unittest.TestCase):
         self._test_compilation_error("test36.tig")
 
     def test_example_37(self):
-        self._test_successful_execution("test37.tig", 0)
+        self._test_successful_execution("test37.tig", return_code=0)
 
     def test_example_38(self):
         self._test_compilation_error("test38.tig")
@@ -128,85 +128,85 @@ class TestCompilation(unittest.TestCase):
         self._test_compilation_error("test40.tig")
 
     def test_example_41(self):
-        self._test_successful_execution("test41.tig", 0)
+        self._test_successful_execution("test41.tig", return_code=0)
 
     def test_example_42(self):
-        self._test_successful_execution("test42.tig", 0)
+        self._test_successful_execution("test42.tig", return_code=0)
 
     def test_example_43(self):
         self._test_compilation_error("test43.tig")
 
     def test_example_44(self):
-        self._test_successful_execution("test44.tig", 0)
+        self._test_successful_execution("test44.tig", return_code=0)
 
     def test_example_45(self):
         self._test_compilation_error("test45.tig")
 
     def test_example_46(self):
-        self._test_successful_execution("test46.tig", 0)
+        self._test_successful_execution("test46.tig", return_code=0)
 
     def test_example_47(self):
-        self._test_successful_execution("test47.tig", 0)
+        self._test_successful_execution("test47.tig", return_code=0)
 
     def test_example_48(self):
-        self._test_successful_execution("test48.tig", 0)
+        self._test_successful_execution("test48.tig", return_code=0)
 
     def test_example_49(self):
         self._test_compilation_error("test49.tig")
 
     def test_example_50(self):
-        self._test_successful_execution("test50.tig", 1)
+        self._test_successful_execution("test50.tig", return_code=1)
 
     def test_example_51(self):
-        self._test_successful_execution("test51.tig", 0)
+        self._test_successful_execution("test51.tig", return_code=0)
 
     def test_example_52(self):
-        self._test_successful_execution("test52.tig", 1)
+        self._test_successful_execution("test52.tig", return_code=1)
 
     def test_example_53(self):
-        self._test_successful_execution("test53.tig", 0)
+        self._test_successful_execution("test53.tig", return_code=0)
 
     def test_example_54(self):
-        self._test_successful_execution("test54.tig", 0)
+        self._test_successful_execution("test54.tig", return_code=0)
 
     def test_example_55(self):
-        self._test_successful_execution("test55.tig", 0)
+        self._test_successful_execution("test55.tig", return_code=0)
 
     def test_example_56(self):
-        self._test_successful_execution("test56.tig", 0)
+        self._test_successful_execution("test56.tig", return_code=0)
 
     def test_example_57(self):
-        self._test_successful_execution("test57.tig", 0)
+        self._test_successful_execution("test57.tig", return_code=0)
 
     def test_example_58(self):
-        self._test_successful_execution("test58.tig", 4)
+        self._test_successful_execution("test58.tig", return_code=4)
 
     def test_example_59(self):
-        self._test_successful_execution("test59.tig", 1)
+        self._test_successful_execution("test59.tig", return_code=1)
 
     def test_example_60(self):
-        self._test_successful_execution("test60.tig", 0)
+        self._test_successful_execution("test60.tig", return_code=0)
 
     def test_example_61(self):
-        self._test_successful_execution("test61.tig", 0)
+        self._test_successful_execution("test61.tig", return_code=0)
 
     def test_example_62(self):
-        self._test_successful_execution("test62.tig", 0)
+        self._test_successful_execution("test62.tig", return_code=0)
 
     def test_example_63(self):
-        self._test_successful_execution("test63.tig", 0)
+        self._test_successful_execution("test63.tig", return_code=0)
 
     def test_example_64(self):
-        self._test_successful_execution("test64.tig", 10)
+        self._test_successful_execution("test64.tig", return_code=10)
 
     def test_example_65(self):
-        self._test_successful_execution("test65.tig", 101)
+        self._test_successful_execution("test65.tig", return_code=101)
 
     def test_example_66(self):
-        self._test_successful_execution("test66.tig", 42)
+        self._test_successful_execution("test66.tig", return_code=42)
 
     def test_example_67(self):
-        self._test_successful_execution("test67.tig", 0)
+        self._test_successful_execution("test67.tig", return_code=0)
 
     def test_example_merge(self):
         self._compile_program("merge.tig")
@@ -239,11 +239,14 @@ class TestCompilation(unittest.TestCase):
         ls_result = self._run_command(["ls"])
         self.assertNotIn("a.out", ls_result.stdout)
 
-    def _test_successful_execution(self, source_file_name: str, return_code: int):
+    def _test_successful_execution(
+        self, source_file_name: str, return_code: int, console_output=""
+    ):
         self._compile_program(source_file_name)
         result = self._run_compiled_program()
 
         self.assertEqual(result.returncode, return_code)
+        self.assertEqual(result.stdout.strip(), console_output)
 
     def _test_segmentation_fault(self, source_file_name: str):
         self._compile_program(source_file_name)
