@@ -14,7 +14,7 @@ All source code can be found in `src`:
 * `putting_it_all_together`: Chapter 12, Putting it All Together.
 * `examples`: A list of Tiger programs provided by [Appel](https://www.cs.princeton.edu/~appel/modern/testcases/).
 * `tests`: Integration tests for specific parts of the compilation process. 
-* `ply`: [Python Lex-Yacc](https://www.dabeaz.com/ply/). Used in chapters 2-3.
+* `ply`: [Python Lex-Yacc](https://www.dabeaz.com/ply/). Used in chapters 2-4.
 
 ## Setup
 This project uses Python version `3.6`.
