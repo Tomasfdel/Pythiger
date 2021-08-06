@@ -76,6 +76,48 @@ class TestBasicBlock(unittest.TestCase):
     def test_example_queens(self):
         self._build_basic_blocks("queens.tig")
 
+    def test_example_50(self):
+        self._build_basic_blocks("test50.tig")
+
+    def test_example_51(self):
+        self._build_basic_blocks("test51.tig")
+
+    def test_example_52(self):
+        self._build_basic_blocks("test52.tig")
+
+    def test_example_53(self):
+        self._build_basic_blocks("test53.tig")
+
+    def test_example_54(self):
+        self._build_basic_blocks("test54.tig")
+
+    def test_example_55(self):
+        self._build_basic_blocks("test55.tig")
+
+    def test_example_56(self):
+        self._build_basic_blocks("test56.tig")
+
+    def test_example_57(self):
+        self._build_basic_blocks("test57.tig")
+
+    def test_example_58(self):
+        self._build_basic_blocks("test58.tig")
+
+    def test_example_59(self):
+        self._build_basic_blocks("test59.tig")
+
+    def test_example_60(self):
+        self._build_basic_blocks("test60.tig")
+
+    def test_example_61(self):
+        self._build_basic_blocks("test61.tig")
+
+    def test_example_62(self):
+        self._build_basic_blocks("test62.tig")
+
+    def test_example_63(self):
+        self._build_basic_blocks("test63.tig")
+
     def _build_basic_blocks(self, file_name: str):
         semantic_analysis(file_name)
         for fragment in FragmentManager.get_fragments():

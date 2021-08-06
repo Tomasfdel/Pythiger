@@ -264,8 +264,50 @@ class TestTypeChecking(unittest.TestCase):
             "Syntax error in input! Unexpected value nil in line 5",
         )
 
+    def test_example_50(self):
+        self._assert_is_expected_type(self._type_check("test50.tig"), sem.IntType)
+
+    def test_example_51(self):
+        self._assert_is_expected_type(self._type_check("test51.tig"), sem.VoidType)
+
+    def test_example_52(self):
+        self._assert_is_expected_type(self._type_check("test52.tig"), sem.IntType)
+
+    def test_example_53(self):
+        self._assert_is_expected_type(self._type_check("test53.tig"), sem.IntType)
+
+    def test_example_54(self):
+        self._assert_is_expected_type(self._type_check("test54.tig"), sem.IntType)
+
+    def test_example_55(self):
+        self._assert_is_expected_type(self._type_check("test55.tig"), sem.IntType)
+
+    def test_example_56(self):
+        self._assert_is_expected_type(self._type_check("test56.tig"), sem.IntType)
+
+    def test_example_57(self):
+        self._assert_is_expected_type(self._type_check("test57.tig"), sem.IntType)
+
+    def test_example_58(self):
+        self._assert_is_expected_type(self._type_check("test58.tig"), sem.IntType)
+
+    def test_example_59(self):
+        self._assert_is_expected_type(self._type_check("test59.tig"), sem.IntType)
+
+    def test_example_60(self):
+        self._assert_is_expected_type(self._type_check("test60.tig"), sem.VoidType)
+
+    def test_example_61(self):
+        self._assert_is_expected_type(self._type_check("test61.tig"), sem.IntType)
+
+    def test_example_62(self):
+        self._assert_is_expected_type(self._type_check("test62.tig"), sem.IntType)
+
+    def test_example_63(self):
+        self._assert_is_expected_type(self._type_check("test63.tig"), sem.VoidType)
+
     def test_example_merge(self):
-        self._assert_is_expected_type(self._type_check("merge.tig"), sem.VoidType)
+        self._assert_is_expected_type(self._type_check("merge.tig"), sem.IntType)
 
     def test_example_queens(self):
         self._assert_is_expected_type(self._type_check("queens.tig"), sem.VoidType)

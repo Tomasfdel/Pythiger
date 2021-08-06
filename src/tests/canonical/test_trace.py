@@ -71,6 +71,48 @@ class TestTrace(unittest.TestCase):
     def test_example_48(self):
         self._schedule_traces("test48.tig")
 
+    def test_example_50(self):
+        self._schedule_traces("test50.tig")
+
+    def test_example_51(self):
+        self._schedule_traces("test51.tig")
+
+    def test_example_52(self):
+        self._schedule_traces("test52.tig")
+
+    def test_example_53(self):
+        self._schedule_traces("test53.tig")
+
+    def test_example_54(self):
+        self._schedule_traces("test54.tig")
+
+    def test_example_55(self):
+        self._schedule_traces("test55.tig")
+
+    def test_example_56(self):
+        self._schedule_traces("test56.tig")
+
+    def test_example_57(self):
+        self._schedule_traces("test57.tig")
+
+    def test_example_58(self):
+        self._schedule_traces("test58.tig")
+
+    def test_example_59(self):
+        self._schedule_traces("test59.tig")
+
+    def test_example_60(self):
+        self._schedule_traces("test60.tig")
+
+    def test_example_61(self):
+        self._schedule_traces("test61.tig")
+
+    def test_example_62(self):
+        self._schedule_traces("test62.tig")
+
+    def test_example_63(self):
+        self._schedule_traces("test63.tig")
+
     def test_example_merge(self):
         self._schedule_traces("merge.tig")
 

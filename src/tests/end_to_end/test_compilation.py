@@ -196,18 +196,29 @@ class TestCompilation(unittest.TestCase):
     def test_example_63(self):
         self._test_successful_execution("test63.tig", 0)
 
+    def test_example_merge(self):
+        self._compile_program("merge.tig")
+        result = self._run_compiled_program(input="1 3 5 6 7 10; 0 2 4 8 9;")
 
-    # TODO: Check input
-    # def test_example_merge(self):
-    #     result = self._compile_program("merge.tig")
-    #
-    #     self._assert_return_value(result, 0)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout.strip(), "0 1 2 3 4 5 6 7 8 9 10")
 
-    # TODO: Check output
-    # def test_example_queens(self):
-    #     result = self._compile_program("queens.tig")
-    #
-    #     self.assertEqual(result.returncode, 0)
+    def test_example_queens(self):
+        self._compile_program("queens.tig")
+        result = self._run_compiled_program()
+
+        self.assertEqual(result.returncode, 0)
+        self.assertIn(
+            " O . . . . . . .\n"
+            + " . . . . O . . .\n"
+            + " . . . . . . . O\n"
+            + " . . . . . O . .\n"
+            + " . . O . . . . .\n"
+            + " . . . . . . O .\n"
+            + " . O . . . . . .\n"
+            + " . . . O . . . .",
+            result.stdout,
+        )
 
     def _test_compilation_error(self, source_file_name: str):
         compilation_result = self._compile_program(source_file_name)
@@ -231,16 +242,19 @@ class TestCompilation(unittest.TestCase):
     def _compile_program(self, source_file_name: str) -> subprocess.CompletedProcess:
         return self._run_command(["./compile.sh", "examples/" + source_file_name])
 
-    def _run_compiled_program(self) -> subprocess.CompletedProcess:
-        return self._run_command(["./a.out"])
+    def _run_compiled_program(self, **kwargs) -> subprocess.CompletedProcess:
+        return self._run_command(["./a.out"], **kwargs)
 
     def _remove_program(self):
         self._run_command(["rm", "a.out"])
 
-    def _run_command(self, arguments: List[str]) -> subprocess.CompletedProcess:
+    def _run_command(
+        self, arguments: List[str], **kwargs
+    ) -> subprocess.CompletedProcess:
         return subprocess.run(
             arguments,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True,
+            **kwargs
         )
