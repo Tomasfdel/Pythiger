@@ -10,9 +10,14 @@ from semantic_analysis.analyzers import TypedExpression, translate_program
 def parse_program(file_name: str) -> ast.Expression:
     with open("examples/" + file_name, "r") as file:
         data = file.read()
-    le.lexer.lineno = 1
+
+    # Both the lexer cloning and the parser restart are necessary
+    # in order to be able to parse files from successive test cases.
+    lexer_clone = le.lexer.clone()
     lex.input(data)
-    return p.parser.parse(data, le.lexer)
+    parse_result = p.parser.parse(data, lexer_clone)
+    p.parser.restart()
+    return parse_result
 
 
 def semantic_analysis(file_name: str) -> TypedExpression:
