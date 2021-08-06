@@ -197,13 +197,13 @@ class TestCompilation(unittest.TestCase):
         self._test_successful_execution("test63.tig", 0)
 
     def test_example_64(self):
-        self._test_successful_execution("test64.tig", 0)
+        self._test_successful_execution("test64.tig", 10)
 
     def test_example_65(self):
-        self._test_successful_execution("test65.tig", 0)
+        self._test_successful_execution("test65.tig", 101)
 
     def test_example_66(self):
-        self._test_successful_execution("test66.tig", 0)
+        self._test_successful_execution("test66.tig", 42)
 
     def test_example_67(self):
         self._test_successful_execution("test67.tig", 0)

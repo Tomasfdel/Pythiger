@@ -17,6 +17,7 @@ in
   do (break; boom());
 
   for i:=0 to 69
-  do if i=42
-  then break        /* This should break when (i = 42) is true */
+  do (a := i;
+      if i=42 then break);        /* This should break when (i = 42) is true */
+  a
 end
