@@ -196,6 +196,18 @@ class TestCompilation(unittest.TestCase):
     def test_example_63(self):
         self._test_successful_execution("test63.tig", 0)
 
+    def test_example_64(self):
+        self._test_successful_execution("test64.tig", 0)
+
+    def test_example_65(self):
+        self._test_successful_execution("test65.tig", 0)
+
+    def test_example_66(self):
+        self._test_successful_execution("test66.tig", 0)
+
+    def test_example_67(self):
+        self._test_successful_execution("test67.tig", 0)
+
     def test_example_merge(self):
         self._compile_program("merge.tig")
         result = self._run_compiled_program(input="1 3 5 6 7 10; 0 2 4 8 9;")
