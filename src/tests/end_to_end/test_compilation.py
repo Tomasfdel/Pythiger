@@ -157,6 +157,46 @@ class TestCompilation(unittest.TestCase):
     def test_example_50(self):
         self._test_successful_execution("test50.tig", 1)
 
+    def test_example_51(self):
+        self._test_successful_execution("test51.tig", 0)
+
+    def test_example_52(self):
+        self._test_successful_execution("test52.tig", 1)
+
+    def test_example_53(self):
+        self._test_successful_execution("test53.tig", 0)
+
+    def test_example_54(self):
+        self._test_successful_execution("test54.tig", 0)
+
+    def test_example_55(self):
+        self._test_successful_execution("test55.tig", 0)
+
+    def test_example_56(self):
+        self._test_successful_execution("test56.tig", 0)
+
+    def test_example_57(self):
+        self._test_successful_execution("test57.tig", 0)
+
+    def test_example_58(self):
+        self._test_successful_execution("test58.tig", 4)
+
+    def test_example_59(self):
+        self._test_successful_execution("test59.tig", 1)
+
+    def test_example_60(self):
+        self._test_successful_execution("test60.tig", 0)
+
+    def test_example_61(self):
+        self._test_successful_execution("test61.tig", 0)
+
+    def test_example_62(self):
+        self._test_successful_execution("test62.tig", 0)
+
+    def test_example_63(self):
+        self._test_successful_execution("test63.tig", 0)
+
+
     # TODO: Check input
     # def test_example_merge(self):
     #     result = self._compile_program("merge.tig")
