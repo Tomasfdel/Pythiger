@@ -70,12 +70,6 @@ class TestBasicBlock(unittest.TestCase):
     def test_example_48(self):
         self._build_basic_blocks("test48.tig")
 
-    def test_example_merge(self):
-        self._build_basic_blocks("merge.tig")
-
-    def test_example_queens(self):
-        self._build_basic_blocks("queens.tig")
-
     def test_example_50(self):
         self._build_basic_blocks("test50.tig")
 
@@ -117,6 +111,21 @@ class TestBasicBlock(unittest.TestCase):
 
     def test_example_63(self):
         self._build_basic_blocks("test63.tig")
+
+    def test_example_64(self):
+        self._build_basic_blocks("test64.tig")
+
+    def test_example_65(self):
+        self._build_basic_blocks("test65.tig")
+
+    def test_example_66(self):
+        self._build_basic_blocks("test66.tig")
+
+    def test_example_merge(self):
+        self._build_basic_blocks("merge.tig")
+
+    def test_example_queens(self):
+        self._build_basic_blocks("queens.tig")
 
     def _build_basic_blocks(self, file_name: str):
         semantic_analysis(file_name)

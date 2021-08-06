@@ -306,6 +306,15 @@ class TestTypeChecking(unittest.TestCase):
     def test_example_63(self):
         self._assert_is_expected_type(self._type_check("test63.tig"), sem.VoidType)
 
+    def test_example_64(self):
+        self._assert_is_expected_type(self._type_check("test64.tig"), sem.IntType)
+
+    def test_example_65(self):
+        self._assert_is_expected_type(self._type_check("test65.tig"), sem.IntType)
+
+    def test_example_66(self):
+        self._assert_is_expected_type(self._type_check("test66.tig"), sem.IntType)
+
     def test_example_merge(self):
         self._assert_is_expected_type(self._type_check("merge.tig"), sem.IntType)
 

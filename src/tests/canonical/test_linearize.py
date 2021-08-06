@@ -110,6 +110,15 @@ class TestLinearize(unittest.TestCase):
     def test_example_63(self):
         self._linearize_trees("test63.tig")
 
+    def test_example_64(self):
+        self._linearize_trees("test64.tig")
+
+    def test_example_65(self):
+        self._linearize_trees("test65.tig")
+
+    def test_example_66(self):
+        self._linearize_trees("test66.tig")
+
     def test_example_merge(self):
         self._linearize_trees("merge.tig")
 

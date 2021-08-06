@@ -113,6 +113,15 @@ class TestTrace(unittest.TestCase):
     def test_example_63(self):
         self._schedule_traces("test63.tig")
 
+    def test_example_64(self):
+        self._schedule_traces("test64.tig")
+
+    def test_example_65(self):
+        self._schedule_traces("test65.tig")
+
+    def test_example_66(self):
+        self._schedule_traces("test66.tig")
+
     def test_example_merge(self):
         self._schedule_traces("merge.tig")
 
