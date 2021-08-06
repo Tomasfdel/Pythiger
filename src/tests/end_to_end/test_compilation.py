@@ -208,6 +208,88 @@ class TestCompilation(unittest.TestCase):
     def test_example_67(self):
         self._test_successful_execution("test67.tig", return_code=0)
 
+    def test_example_68(self):
+        self._test_successful_execution("test68.tig", return_code=69)
+
+    def test_example_69(self):
+        self._test_successful_execution("test69.tig", return_code=42)
+
+    def test_example_70(self):
+        self._test_successful_execution("test70.tig", return_code=3, console_output="70")
+
+    def test_example_71(self):
+        self._test_successful_execution("test71.tig", return_code=1)
+
+    def test_example_72(self):
+        self._test_successful_execution("test72.tig", return_code=0)
+
+    def test_example_73(self):
+        self._test_successful_execution("test73.tig", return_code=1)
+
+    def test_example_74(self):
+        self._test_successful_execution("test74.tig", return_code=0)
+
+    def test_example_75(self):
+        self._test_successful_execution("test75.tig", return_code=1, console_output="Out of range char! Arguments: 3000")
+
+    def test_example_76(self):
+        self._test_successful_execution("test76.tig", return_code=0, console_output="F")
+
+    def test_example_77(self):
+        self._test_successful_execution("test77.tig", return_code=0, console_output="Success!")
+
+    def test_example_78(self):
+        self._test_successful_execution("test78.tig", return_code=0, console_input="A very long string", console_output="A")
+
+    def test_example_79(self):
+        input_number = 121
+        self._test_successful_execution("test79.tig", return_code=input_number % 256, console_input=str(input_number))
+
+    def test_example_80(self):
+        self._test_successful_execution("test80.tig", return_code=0)
+
+    def test_example_81(self):
+        self._test_successful_execution("test81.tig", return_code=1)
+
+    def test_example_82(self):
+        self._test_successful_execution("test82.tig", return_code=255)
+
+    def test_example_83(self):
+        self._test_successful_execution("test83.tig", return_code=0, console_output="This string should be complete")
+
+    def test_example_84(self):
+        self._test_successful_execution("test84.tig", return_code=0, console_output="Left string")
+
+    def test_example_85(self):
+        self._test_successful_execution("test85.tig", return_code=0, console_output="Right string")
+
+    def test_example_86(self):
+        self._test_successful_execution("test86.tig", return_code=1)
+
+    def test_example_87(self):
+        self._test_successful_execution("test87.tig", return_code=0)
+
+    def test_example_88(self):
+        self._test_successful_execution("test88.tig", return_code=27)
+
+    def test_example_89(self):
+        self._test_successful_execution("test89.tig", return_code=0)
+
+    def test_example_90(self):
+        self._test_successful_execution("test90.tig", return_code=1)
+
+    def test_example_91(self):
+        self._test_successful_execution("test91.tig", return_code=1, console_output='Out of range substring! Arguments: "An unnecesary long string for testing" -213 215')
+
+    def test_example_92(self):
+        self._test_successful_execution("test92.tig", return_code=1, console_output='Out of range substring! Arguments: "An unnecesary long string for testing" 5 215')
+
+    def test_example_93(self):
+        self._test_successful_execution("test93.tig", return_code=0, console_output="unnecessary")
+
+    def test_example_94(self):
+        self._test_successful_execution("test94.tig", return_code=0, console_output="4567")
+
     def test_example_merge(self):
         self._test_successful_execution(
             "merge.tig",
