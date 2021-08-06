@@ -209,11 +209,12 @@ class TestCompilation(unittest.TestCase):
         self._test_successful_execution("test67.tig", return_code=0)
 
     def test_example_merge(self):
-        self._compile_program("merge.tig")
-        result = self._run_compiled_program(input="1 3 5 6 7 10; 0 2 4 8 9;")
-
-        self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout.strip(), "0 1 2 3 4 5 6 7 8 9 10")
+        self._test_successful_execution(
+            "merge.tig",
+            return_code=0,
+            console_input="1 3 5 6 7 10; 0 2 4 8 9;",
+            console_output="0 1 2 3 4 5 6 7 8 9 10",
+        )
 
     def test_example_queens(self):
         self._compile_program("queens.tig")
@@ -240,10 +241,14 @@ class TestCompilation(unittest.TestCase):
         self.assertNotIn("a.out", ls_result.stdout)
 
     def _test_successful_execution(
-        self, source_file_name: str, return_code: int, console_output=""
+        self,
+        source_file_name: str,
+        return_code: int,
+        console_input="",
+        console_output="",
     ):
         self._compile_program(source_file_name)
-        result = self._run_compiled_program()
+        result = self._run_compiled_program(console_input)
 
         self.assertEqual(result.returncode, return_code)
         self.assertEqual(result.stdout.strip(), console_output)
@@ -257,19 +262,19 @@ class TestCompilation(unittest.TestCase):
     def _compile_program(self, source_file_name: str) -> subprocess.CompletedProcess:
         return self._run_command(["./compile.sh", "examples/" + source_file_name])
 
-    def _run_compiled_program(self, **kwargs) -> subprocess.CompletedProcess:
-        return self._run_command(["./a.out"], **kwargs)
+    def _run_compiled_program(self, console_input="") -> subprocess.CompletedProcess:
+        return self._run_command(["./a.out"], console_input)
 
     def _remove_program(self):
         self._run_command(["rm", "a.out"])
 
     def _run_command(
-        self, arguments: List[str], **kwargs
+        self, arguments: List[str], console_input=""
     ) -> subprocess.CompletedProcess:
         return subprocess.run(
             arguments,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True,
-            **kwargs
+            input=console_input,
         )
