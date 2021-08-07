@@ -205,6 +205,9 @@ class TestBasicBlock(unittest.TestCase):
     def test_example_94(self):
         self._build_basic_blocks("test94.tig")
 
+    def test_example_95(self):
+        self._build_basic_blocks("test95.tig")
+
     def test_example_merge(self):
         self._build_basic_blocks("merge.tig")
 

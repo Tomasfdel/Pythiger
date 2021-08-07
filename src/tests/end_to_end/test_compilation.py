@@ -327,6 +327,9 @@ class TestCompilation(unittest.TestCase):
             "test94.tig", return_code=0, console_output="4567"
         )
 
+    def test_example_95(self):
+        self._test_successful_execution("test95.tig", return_code=106)
+
     def test_example_merge(self):
         self._test_successful_execution(
             "merge.tig",
