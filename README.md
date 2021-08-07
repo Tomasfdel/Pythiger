@@ -25,7 +25,9 @@ pip3 install -r requirements.txt
 ```
 
 ## Usage
-Make sure `src/compile.sh` has execution permissions. From the `src` directory, run: 
+Make sure `src/compile.sh` has execution permissions and that the `src` directory is added to your `$PYTHONPATH` environment variable. 
+
+From the `src` directory, run: 
 ```bash
 ./compile.sh source_file
 ```
