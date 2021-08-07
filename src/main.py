@@ -64,7 +64,6 @@ def main():
         Codegen.codegen(process_body) for process_body in canonized_bodies
     ]
 
-    # TODO: Name option in runtime?
     file_handler = FileHandler("output.s")
     file_handler.print_data_header()
     for string_fragment in string_fragments:
