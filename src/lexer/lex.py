@@ -201,7 +201,6 @@ def t_INITIAL_comment_escapeString_newline(t):
 t_ANY_ignore = " \t"
 
 # Error handling rule
-# To Do: Ver un manejo correcto de errores y como debería responder en cada caso
 def t_ANY_error(t):
     print("Illegal character '%s' in line '%s'" % (t.value[0], t.lineno))
 
