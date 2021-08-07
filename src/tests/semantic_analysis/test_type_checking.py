@@ -315,6 +315,90 @@ class TestTypeChecking(unittest.TestCase):
     def test_example_66(self):
         self._assert_is_expected_type(self._type_check("test66.tig"), sem.IntType)
 
+    def test_example_67(self):
+        self._assert_is_expected_type(self._type_check("test67.tig"), sem.IntType)
+
+    def test_example_68(self):
+        self._assert_is_expected_type(self._type_check("test68.tig"), sem.IntType)
+
+    def test_example_69(self):
+        self._assert_is_expected_type(self._type_check("test69.tig"), sem.VoidType)
+
+    def test_example_70(self):
+        self._assert_is_expected_type(self._type_check("test70.tig"), sem.VoidType)
+
+    def test_example_71(self):
+        self._assert_is_expected_type(self._type_check("test71.tig"), sem.IntType)
+
+    def test_example_72(self):
+        self._assert_is_expected_type(self._type_check("test72.tig"), sem.IntType)
+
+    def test_example_73(self):
+        self._assert_is_expected_type(self._type_check("test73.tig"), sem.IntType)
+
+    def test_example_74(self):
+        self._assert_is_expected_type(self._type_check("test74.tig"), sem.IntType)
+
+    def test_example_75(self):
+        self._assert_is_expected_type(self._type_check("test75.tig"), sem.StringType)
+
+    def test_example_76(self):
+        self._assert_is_expected_type(self._type_check("test76.tig"), sem.IntType)
+
+    def test_example_77(self):
+        self._assert_is_expected_type(self._type_check("test77.tig"), sem.IntType)
+
+    def test_example_78(self):
+        self._assert_is_expected_type(self._type_check("test78.tig"), sem.IntType)
+
+    def test_example_79(self):
+        self._assert_is_expected_type(self._type_check("test79.tig"), sem.IntType)
+
+    def test_example_80(self):
+        self._assert_is_expected_type(self._type_check("test80.tig"), sem.IntType)
+
+    def test_example_81(self):
+        self._assert_is_expected_type(self._type_check("test81.tig"), sem.IntType)
+
+    def test_example_82(self):
+        self._assert_is_expected_type(self._type_check("test82.tig"), sem.IntType)
+
+    def test_example_83(self):
+        self._assert_is_expected_type(self._type_check("test83.tig"), sem.IntType)
+
+    def test_example_84(self):
+        self._assert_is_expected_type(self._type_check("test84.tig"), sem.IntType)
+
+    def test_example_85(self):
+        self._assert_is_expected_type(self._type_check("test85.tig"), sem.IntType)
+
+    def test_example_86(self):
+        self._assert_is_expected_type(self._type_check("test86.tig"), sem.IntType)
+
+    def test_example_87(self):
+        self._assert_is_expected_type(self._type_check("test87.tig"), sem.IntType)
+
+    def test_example_88(self):
+        self._assert_is_expected_type(self._type_check("test88.tig"), sem.IntType)
+
+    def test_example_89(self):
+        self._assert_is_expected_type(self._type_check("test89.tig"), sem.IntType)
+
+    def test_example_90(self):
+        self._assert_is_expected_type(self._type_check("test90.tig"), sem.IntType)
+
+    def test_example_91(self):
+        self._assert_is_expected_type(self._type_check("test91.tig"), sem.StringType)
+
+    def test_example_92(self):
+        self._assert_is_expected_type(self._type_check("test92.tig"), sem.StringType)
+
+    def test_example_93(self):
+        self._assert_is_expected_type(self._type_check("test93.tig"), sem.IntType)
+
+    def test_example_94(self):
+        self._assert_is_expected_type(self._type_check("test94.tig"), sem.IntType)
+
     def test_example_merge(self):
         self._assert_is_expected_type(self._type_check("merge.tig"), sem.IntType)
 

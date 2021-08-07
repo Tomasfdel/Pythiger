@@ -119,6 +119,90 @@ class TestLinearize(unittest.TestCase):
     def test_example_66(self):
         self._linearize_trees("test66.tig")
 
+    def test_example_67(self):
+        self._linearize_trees("test67.tig")
+
+    def test_example_68(self):
+        self._linearize_trees("test68.tig")
+
+    def test_example_69(self):
+        self._linearize_trees("test69.tig")
+
+    def test_example_70(self):
+        self._linearize_trees("test70.tig")
+
+    def test_example_71(self):
+        self._linearize_trees("test71.tig")
+
+    def test_example_72(self):
+        self._linearize_trees("test72.tig")
+
+    def test_example_73(self):
+        self._linearize_trees("test73.tig")
+
+    def test_example_74(self):
+        self._linearize_trees("test74.tig")
+
+    def test_example_75(self):
+        self._linearize_trees("test75.tig")
+
+    def test_example_76(self):
+        self._linearize_trees("test76.tig")
+
+    def test_example_77(self):
+        self._linearize_trees("test77.tig")
+
+    def test_example_78(self):
+        self._linearize_trees("test78.tig")
+
+    def test_example_79(self):
+        self._linearize_trees("test79.tig")
+
+    def test_example_80(self):
+        self._linearize_trees("test80.tig")
+
+    def test_example_81(self):
+        self._linearize_trees("test81.tig")
+
+    def test_example_82(self):
+        self._linearize_trees("test82.tig")
+
+    def test_example_83(self):
+        self._linearize_trees("test83.tig")
+
+    def test_example_84(self):
+        self._linearize_trees("test84.tig")
+
+    def test_example_85(self):
+        self._linearize_trees("test85.tig")
+
+    def test_example_86(self):
+        self._linearize_trees("test86.tig")
+
+    def test_example_87(self):
+        self._linearize_trees("test87.tig")
+
+    def test_example_88(self):
+        self._linearize_trees("test88.tig")
+
+    def test_example_89(self):
+        self._linearize_trees("test89.tig")
+
+    def test_example_90(self):
+        self._linearize_trees("test90.tig")
+
+    def test_example_91(self):
+        self._linearize_trees("test91.tig")
+
+    def test_example_92(self):
+        self._linearize_trees("test92.tig")
+
+    def test_example_93(self):
+        self._linearize_trees("test93.tig")
+
+    def test_example_94(self):
+        self._linearize_trees("test94.tig")
+
     def test_example_merge(self):
         self._linearize_trees("merge.tig")
 

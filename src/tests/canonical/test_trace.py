@@ -122,6 +122,90 @@ class TestTrace(unittest.TestCase):
     def test_example_66(self):
         self._schedule_traces("test66.tig")
 
+    def test_example_67(self):
+        self._schedule_traces("test67.tig")
+
+    def test_example_68(self):
+        self._schedule_traces("test68.tig")
+
+    def test_example_69(self):
+        self._schedule_traces("test69.tig")
+
+    def test_example_70(self):
+        self._schedule_traces("test70.tig")
+
+    def test_example_71(self):
+        self._schedule_traces("test71.tig")
+
+    def test_example_72(self):
+        self._schedule_traces("test72.tig")
+
+    def test_example_73(self):
+        self._schedule_traces("test73.tig")
+
+    def test_example_74(self):
+        self._schedule_traces("test74.tig")
+
+    def test_example_75(self):
+        self._schedule_traces("test75.tig")
+
+    def test_example_76(self):
+        self._schedule_traces("test76.tig")
+
+    def test_example_77(self):
+        self._schedule_traces("test77.tig")
+
+    def test_example_78(self):
+        self._schedule_traces("test78.tig")
+
+    def test_example_79(self):
+        self._schedule_traces("test79.tig")
+
+    def test_example_80(self):
+        self._schedule_traces("test80.tig")
+
+    def test_example_81(self):
+        self._schedule_traces("test81.tig")
+
+    def test_example_82(self):
+        self._schedule_traces("test82.tig")
+
+    def test_example_83(self):
+        self._schedule_traces("test83.tig")
+
+    def test_example_84(self):
+        self._schedule_traces("test84.tig")
+
+    def test_example_85(self):
+        self._schedule_traces("test85.tig")
+
+    def test_example_86(self):
+        self._schedule_traces("test86.tig")
+
+    def test_example_87(self):
+        self._schedule_traces("test87.tig")
+
+    def test_example_88(self):
+        self._schedule_traces("test88.tig")
+
+    def test_example_89(self):
+        self._schedule_traces("test89.tig")
+
+    def test_example_90(self):
+        self._schedule_traces("test90.tig")
+
+    def test_example_91(self):
+        self._schedule_traces("test91.tig")
+
+    def test_example_92(self):
+        self._schedule_traces("test92.tig")
+
+    def test_example_93(self):
+        self._schedule_traces("test93.tig")
+
+    def test_example_94(self):
+        self._schedule_traces("test94.tig")
+
     def test_example_merge(self):
         self._schedule_traces("merge.tig")
 

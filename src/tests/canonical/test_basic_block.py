@@ -121,6 +121,90 @@ class TestBasicBlock(unittest.TestCase):
     def test_example_66(self):
         self._build_basic_blocks("test66.tig")
 
+    def test_example_67(self):
+        self._build_basic_blocks("test67.tig")
+
+    def test_example_68(self):
+        self._build_basic_blocks("test68.tig")
+
+    def test_example_69(self):
+        self._build_basic_blocks("test69.tig")
+
+    def test_example_70(self):
+        self._build_basic_blocks("test70.tig")
+
+    def test_example_71(self):
+        self._build_basic_blocks("test71.tig")
+
+    def test_example_72(self):
+        self._build_basic_blocks("test72.tig")
+
+    def test_example_73(self):
+        self._build_basic_blocks("test73.tig")
+
+    def test_example_74(self):
+        self._build_basic_blocks("test74.tig")
+
+    def test_example_75(self):
+        self._build_basic_blocks("test75.tig")
+
+    def test_example_76(self):
+        self._build_basic_blocks("test76.tig")
+
+    def test_example_77(self):
+        self._build_basic_blocks("test77.tig")
+
+    def test_example_78(self):
+        self._build_basic_blocks("test78.tig")
+
+    def test_example_79(self):
+        self._build_basic_blocks("test79.tig")
+
+    def test_example_80(self):
+        self._build_basic_blocks("test80.tig")
+
+    def test_example_81(self):
+        self._build_basic_blocks("test81.tig")
+
+    def test_example_82(self):
+        self._build_basic_blocks("test82.tig")
+
+    def test_example_83(self):
+        self._build_basic_blocks("test83.tig")
+
+    def test_example_84(self):
+        self._build_basic_blocks("test84.tig")
+
+    def test_example_85(self):
+        self._build_basic_blocks("test85.tig")
+
+    def test_example_86(self):
+        self._build_basic_blocks("test86.tig")
+
+    def test_example_87(self):
+        self._build_basic_blocks("test87.tig")
+
+    def test_example_88(self):
+        self._build_basic_blocks("test88.tig")
+
+    def test_example_89(self):
+        self._build_basic_blocks("test89.tig")
+
+    def test_example_90(self):
+        self._build_basic_blocks("test90.tig")
+
+    def test_example_91(self):
+        self._build_basic_blocks("test91.tig")
+
+    def test_example_92(self):
+        self._build_basic_blocks("test92.tig")
+
+    def test_example_93(self):
+        self._build_basic_blocks("test93.tig")
+
+    def test_example_94(self):
+        self._build_basic_blocks("test94.tig")
+
     def test_example_merge(self):
         self._build_basic_blocks("merge.tig")
 
