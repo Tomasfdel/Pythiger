@@ -119,8 +119,6 @@ def t_escapeString_finish(t):
     t.lexer.begin("string")
 
 
-# Hay un asunto acá, porque string apunta al final en vez de al principio del
-# token. Esto nos jode en algo?
 def t_string_STRING(t):
     # Reads the second character " and returns the STRING token
     r"\""
